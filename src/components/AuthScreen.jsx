@@ -1,16 +1,29 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Compass, LogIn, UserPlus } from 'lucide-react';
+import { BookOpen, Compass, Eye, EyeOff, KeyRound, LogIn, Mail, UserPlus } from 'lucide-react';
 import { formatAuthError, isSupabaseConfigured, supabase } from '../lib/supabase.js';
 
 export default function AuthScreen() {
-  const [modo, setModo] = useState('login');
+  const [modo, setModo] = useState('login'); // 'login' | 'cadastro' | 'esqueci' | 'magic'
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [enviando, setEnviando] = useState(false);
+
+  const redirectUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}${window.location.pathname}`
+      : undefined;
+
+  function trocarModo(novo) {
+    setModo(novo);
+    setErro('');
+    setAviso('');
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -21,18 +34,40 @@ export default function AuthScreen() {
     setEnviando(true);
     try {
       if (modo === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email, senha });
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
           password: senha,
-          options: { data: { nome: nome.trim() || 'Aventureiro' } },
+        });
+        if (error) throw error;
+      } else if (modo === 'cadastro') {
+        if (senha !== confirmarSenha) {
+          throw new Error('As duas senhas não coincidem.');
+        }
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password: senha,
+          options: {
+            data: { nome: nome.trim() || 'Aventureiro' },
+            emailRedirectTo: redirectUrl,
+          },
         });
         if (error) throw error;
         if (!data.session) {
-          setAviso('Conta criada! Verifique seu e-mail para confirmar (ou entre se a confirmação estiver desligada).');
+          setAviso('Conta criada! Verifique seu e-mail para confirmar (ou tente entrar se a confirmação estiver desligada).');
         }
+      } else if (modo === 'esqueci') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: redirectUrl,
+        });
+        if (error) throw error;
+        setAviso('Enviamos um link para o seu e-mail para redefinir a senha. Confira também a caixa de spam.');
+      } else if (modo === 'magic') {
+        const { error } = await supabase.auth.signInWithOtp({
+          email: email.trim(),
+          options: { emailRedirectTo: redirectUrl },
+        });
+        if (error) throw error;
+        setAviso('Enviamos um link de acesso direto para o seu e-mail! Basta clicar nele para entrar.');
       }
     } catch (err) {
       setErro(formatAuthError(err));
@@ -63,26 +98,28 @@ export default function AuthScreen() {
           </div>
         ) : (
           <>
-            <div className="row">
+            <div className="row" style={{ gap: '0.35rem' }}>
               <button
                 type="button"
                 className={`btn btn-sm ${modo === 'login' ? 'btn-primary' : ''}`}
-                onClick={() => {
-                  setModo('login');
-                  setErro('');
-                }}
+                onClick={() => trocarModo('login')}
               >
-                <LogIn size={15} /> Entrar
+                <LogIn size={14} /> Entrar
               </button>
               <button
                 type="button"
                 className={`btn btn-sm ${modo === 'cadastro' ? 'btn-primary' : ''}`}
-                onClick={() => {
-                  setModo('cadastro');
-                  setErro('');
-                }}
+                onClick={() => trocarModo('cadastro')}
               >
-                <UserPlus size={15} /> Criar conta
+                <UserPlus size={14} /> Criar conta
+              </button>
+              <button
+                type="button"
+                className={`btn btn-sm ${modo === 'magic' ? 'btn-primary' : ''}`}
+                onClick={() => trocarModo('magic')}
+                title="Entrar com link no e-mail sem precisar de senha"
+              >
+                <Mail size={14} /> Link no e-mail
               </button>
             </div>
 
@@ -110,17 +147,44 @@ export default function AuthScreen() {
                 />
               </div>
 
-              <div>
-                <label className="muted">Senha</label>
-                <input
-                  type="password"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
-                  required
-                  minLength={6}
-                />
-              </div>
+              {(modo === 'login' || modo === 'cadastro') && (
+                <div>
+                  <label className="muted">Senha</label>
+                  <div className="row" style={{ gap: '0.35rem' }}>
+                    <input
+                      type={mostrarSenha ? 'text' : 'password'}
+                      value={senha}
+                      onChange={(e) => setSenha(e.target.value)}
+                      placeholder="Mínimo 6 caracteres"
+                      required
+                      minLength={6}
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={() => setMostrarSenha((v) => !v)}
+                      title={mostrarSenha ? 'Ocultar senha' : 'Ver senha'}
+                    >
+                      {mostrarSenha ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {modo === 'cadastro' && (
+                <div>
+                  <label className="muted">Confirmar senha</label>
+                  <input
+                    type={mostrarSenha ? 'text' : 'password'}
+                    value={confirmarSenha}
+                    onChange={(e) => setConfirmarSenha(e.target.value)}
+                    placeholder="Digite a senha novamente"
+                    required
+                    minLength={6}
+                  />
+                </div>
+              )}
 
               {erro && (
                 <div className="badge badge-accent" style={{ borderRadius: 8, padding: '0.5rem 0.75rem' }}>
@@ -134,8 +198,37 @@ export default function AuthScreen() {
               )}
 
               <button type="submit" className="btn btn-primary" disabled={enviando}>
-                {enviando ? 'Aguarde...' : modo === 'login' ? 'Entrar na Mesa' : 'Criar conta'}
+                {enviando
+                  ? 'Aguarde...'
+                  : modo === 'login'
+                  ? 'Entrar na Mesa'
+                  : modo === 'cadastro'
+                  ? 'Criar conta'
+                  : modo === 'esqueci'
+                  ? 'Enviar link de recuperação'
+                  : 'Enviar link de acesso no e-mail'}
               </button>
+
+              {modo === 'login' && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost"
+                  onClick={() => trocarModo('esqueci')}
+                  style={{ alignSelf: 'flex-start', paddingLeft: 0 }}
+                >
+                  <KeyRound size={14} /> Esqueci minha senha
+                </button>
+              )}
+              {modo === 'esqueci' && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost"
+                  onClick={() => trocarModo('login')}
+                  style={{ alignSelf: 'flex-start', paddingLeft: 0 }}
+                >
+                  ← Voltar para o login
+                </button>
+              )}
             </form>
           </>
         )}

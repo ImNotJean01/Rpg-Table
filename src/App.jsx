@@ -212,11 +212,72 @@ function CampanhaShell({ user, perfil, onSignOut }) {
   );
 }
 
+function NovaSenhaScreen({ onConcluir }) {
+  const [novaSenha, setNovaSenha] = useState('');
+  const [confirmar, setConfirmar] = useState('');
+  const [erro, setErro] = useState('');
+  const [salvando, setSalvando] = useState(false);
+
+  async function salvar(e) {
+    e.preventDefault();
+    setErro('');
+    if (novaSenha !== confirmar) {
+      setErro('As duas senhas não coincidem.');
+      return;
+    }
+    setSalvando(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: novaSenha });
+      if (error) throw error;
+      onConcluir();
+    } catch (err) {
+      setErro(err.message || 'Erro ao atualizar senha.');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <div className="container" style={{ maxWidth: 420, paddingTop: '3rem' }}>
+      <form onSubmit={salvar} className="card stack">
+        <h2 style={{ margin: 0 }}>Definir nova senha</h2>
+        <p className="muted" style={{ margin: 0 }}>
+          Digite sua nova senha abaixo para continuar na Mesa.
+        </p>
+        <input
+          type="password"
+          value={novaSenha}
+          onChange={(e) => setNovaSenha(e.target.value)}
+          placeholder="Nova senha (mín. 6 caracteres)"
+          minLength={6}
+          required
+        />
+        <input
+          type="password"
+          value={confirmar}
+          onChange={(e) => setConfirmar(e.target.value)}
+          placeholder="Confirmar nova senha"
+          minLength={6}
+          required
+        />
+        {erro && <div className="badge badge-accent">{erro}</div>}
+        <button type="submit" className="btn btn-primary" disabled={salvando}>
+          {salvando ? 'Salvando...' : 'Salvar nova senha'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export default function App() {
-  const { user, perfil, loading, signOut } = useAuth();
+  const { user, perfil, loading, recuperandoSenha, limparRecuperacao, signOut } = useAuth();
 
   if (loading) {
     return <div className="container muted">Iniciando Mesa...</div>;
+  }
+
+  if (user && recuperandoSenha) {
+    return <NovaSenhaScreen onConcluir={limparRecuperacao} />;
   }
 
   return (

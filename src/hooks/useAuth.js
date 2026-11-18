@@ -5,6 +5,7 @@ export function useAuth() {
   const [user, setUser] = useState(null);
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [recuperandoSenha, setRecuperandoSenha] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -38,8 +39,11 @@ export function useAuth() {
       });
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (!ativo) return;
+      if (event === 'PASSWORD_RECOVERY') {
+        setRecuperandoSenha(true);
+      }
       const sessionUser = session?.user || null;
       setUser(sessionUser);
       carregarPerfil(sessionUser);
@@ -56,7 +60,15 @@ export function useAuth() {
     await supabase.auth.signOut();
     setUser(null);
     setPerfil(null);
+    setRecuperandoSenha(false);
   }
 
-  return { user, perfil, loading, signOut };
+  return {
+    user,
+    perfil,
+    loading,
+    recuperandoSenha,
+    limparRecuperacao: () => setRecuperandoSenha(false),
+    signOut,
+  };
 }
