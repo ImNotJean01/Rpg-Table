@@ -10,7 +10,6 @@
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
-    "@google/genai": "^3.6.0",
     "@supabase/supabase-js": "^2.49.1",
     "dompurify": "^3.2.4",
     "konva": "^9.3.18",

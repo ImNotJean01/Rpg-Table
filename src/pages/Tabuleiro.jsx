@@ -346,59 +346,6 @@ export default function Tabuleiro({
     });
   }
 
-  async function aplicarMapaGemini(resultado, limparAntes) {
-    if (!supabase || !cenaAtual) return;
-    const grade = cenaAtual.grade || 70;
-
-    if (limparAntes) {
-      const limparPatch = {};
-      for (const k of Object.keys(cenaAtual.terreno || {})) {
-        if (!(k in resultado.terreno)) limparPatch[k] = null;
-      }
-      await Promise.all([
-        enviarPatchTerreno({ ...limparPatch, ...resultado.terreno }),
-        supabase.from('desenhos').delete().eq('cena_id', cenaAtual.id),
-        supabase
-          .from('pins')
-          .delete()
-          .eq('cena_id', cenaAtual.id)
-          .is('personagem_id', null),
-      ]);
-    } else if (Object.keys(resultado.terreno).length > 0) {
-      await enviarPatchTerreno(resultado.terreno);
-    }
-
-    for (const t of resultado.textos || []) {
-      await criarDesenho('texto', {
-        x: t.x * grade,
-        y: t.y * grade,
-        texto: t.texto,
-        cor: t.cor,
-      });
-    }
-
-    for (const p of resultado.pins || []) {
-      const { data } = await supabase
-        .from('pins')
-        .insert({
-          campanha_id: campanhaId,
-          cena_id: cenaAtual.id,
-          nome: p.nome,
-          icone: p.icone,
-          cor: p.cor,
-          tamanho: p.tamanho,
-          x: Math.round(p.x) * grade,
-          y: Math.round(p.y) * grade,
-          visivel: p.visivel,
-        })
-        .select()
-        .single();
-      if (data && p.notas) {
-        await supabase.from('pins_notas').upsert({ pin_id: data.id, notas: p.notas });
-      }
-    }
-  }
-
   async function limparCenaCompleta() {
     if (!supabase || !cenaAtual) return;
     if (!confirm('Limpar terreno, desenhos e pins de cenário desta cena? (Pins dos jogadores serão mantidos.)')) return;
@@ -572,13 +519,10 @@ export default function Tabuleiro({
               />
               {isMestre && assistenteAberto && (
                 <AssistenteMapa
-                  campanhaId={campanhaId}
-                  sistemaNome={sistema.nome}
                   cena={cenaAtual}
                   carimboAtivo={carimboAtivo}
                   onSelecionarCarimbo={setCarimboAtivo}
                   onAplicarTerreno={(patch) => enviarPatchTerreno(patch)}
-                  onAplicarMapaGemini={aplicarMapaGemini}
                   onAlterarAmbiente={(ambiente) => atualizarCena({ ambiente })}
                   onCriarPinSugerido={criarPinSugerido}
                   onFechar={() => setAssistenteAberto(false)}

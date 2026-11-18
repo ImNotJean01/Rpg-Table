@@ -11,7 +11,7 @@ Um cantinho feito para juntar os amigos e jogar RPG de mesa online sem precisar 
 - **História & Sobre:** espaço para o mestre contar a história em capítulos e deixar as regras da casa combinadas.
 - **Pistas (Handouts):** cartas, fotos e documentos que o mestre libera na hora da sessão para todo mundo ver.
 - **Fichas & Bestiário:** fichas prontas para **Ordem Paranormal** (com PV, PE, SAN, perícias, rituais e rolagem automática) e um **modo Genérico** para adaptar para qualquer livro, além de NPCs e monstros ocultos.
-- **Tabuleiro ao vivo:** mapa com grade, tokens dos personagens, névoa de guerra, régua, ping (`Alt`+clique) e **Assistente de Mapa** (com carimbos de salas, gerador de masmorra e integração opcional com Gemini no plano grátis).
+- **Tabuleiro ao vivo:** mapa com imagem de fundo (você pode subir qualquer mapa pronto ou gerado fora do site), grade, tokens dos personagens, névoa de guerra, régua, ping (`Alt`+clique) e **Assistente de Mapa** (sugestões por ambiente, carimbos de salas e gerador de planta).
 - **Iniciativa & Dados:** ordem de turnos e rolador de dados sincronizados para todo mundo na mesa.
 - **Biblioteca & Guias:** links úteis e resumos rápidos de como os sistemas funcionam.
 

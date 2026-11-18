@@ -1,45 +1,21 @@
 import { useState } from 'react';
-import { Lightbulb, MapPin, Sparkles, Stamp, Wand2, X } from 'lucide-react';
+import { Lightbulb, MapPin, Stamp, Wand2, X } from 'lucide-react';
 import { CARIMBOS } from './assistente/carimbos.js';
 import { gerarMasmorra } from './assistente/geradorMasmorra.js';
 import { AMBIENTES, RECOMENDACOES_POR_AMBIENTE } from './assistente/recomendacoes.js';
-import {
-  gerarMapaComGemini,
-  lerChaveGeminiLocal,
-  salvarChaveGeminiLocal,
-} from '../../lib/geminiMapa.js';
-import { supabase } from '../../lib/supabase.js';
-
-const EXEMPLOS_GEMINI = [
-  'Mansão abandonada com hall, biblioteca secreta, 2 cultistas e armadilha na entrada',
-  'Masmorra alagada com ponte de madeira, câmara do chefe e 1 baú escondido',
-  'Taverna de beira de estrada com balcão, lareira, saída dos fundos e contato suspeito',
-  'Laboratório secreto com 3 salas de contenção, alarme e criatura solta',
-];
 
 export default function AssistenteMapa({
-  campanhaId,
-  sistemaNome,
   cena,
   carimboAtivo,
   onSelecionarCarimbo,
   onAplicarTerreno,
-  onAplicarMapaGemini,
   onAlterarAmbiente,
   onCriarPinSugerido,
   onFechar,
 }) {
-  const [aba, setAba] = useState('gemini');
+  const [aba, setAba] = useState('recomendacoes');
   const [estilo, setEstilo] = useState('masmorra');
   const [porte, setPorte] = useState('medio');
-
-  // Estado Gemini
-  const [promptGemini, setPromptGemini] = useState('');
-  const [chaveLocal, setChaveLocal] = useState(() => lerChaveGeminiLocal());
-  const [mostrarChave, setMostrarChave] = useState(() => !lerChaveGeminiLocal());
-  const [limparAntes, setLimparAntes] = useState(true);
-  const [gerandoGemini, setGerandoGemini] = useState(false);
-  const [erroGemini, setErroGemini] = useState('');
 
   const ambienteAtual = cena?.ambiente || 'masmorra';
   const grupos = RECOMENDACOES_POR_AMBIENTE[ambienteAtual] || [];
@@ -47,28 +23,6 @@ export default function AssistenteMapa({
   function handleGerarPlanta() {
     const { patch } = gerarMasmorra({ estilo, porte });
     onAplicarTerreno(patch);
-  }
-
-  async function handleGerarGemini(e) {
-    e.preventDefault();
-    if (!promptGemini.trim()) return;
-    setErroGemini('');
-    setGerandoGemini(true);
-    try {
-      salvarChaveGeminiLocal(chaveLocal);
-      const resultado = await gerarMapaComGemini({
-        supabase,
-        campanhaId,
-        prompt: promptGemini.trim(),
-        sistemaNome,
-        chaveLocal,
-      });
-      await onAplicarMapaGemini(resultado, limparAntes);
-    } catch (err) {
-      setErroGemini(err.message || 'Erro ao gerar mapa.');
-    } finally {
-      setGerandoGemini(false);
-    }
   }
 
   return (
@@ -79,7 +33,7 @@ export default function AssistenteMapa({
         top: 12,
         left: 12,
         zIndex: 25,
-        width: 360,
+        width: 340,
         maxWidth: 'calc(100% - 24px)',
         maxHeight: 'calc(100% - 24px)',
         overflowY: 'auto',
@@ -93,14 +47,7 @@ export default function AssistenteMapa({
         </button>
       </div>
 
-      <div className="row" style={{ gap: '0.28rem' }}>
-        <button
-          type="button"
-          className={`btn btn-sm ${aba === 'gemini' ? 'btn-primary' : ''}`}
-          onClick={() => setAba('gemini')}
-        >
-          <Sparkles size={13} /> Gemini
-        </button>
+      <div className="row" style={{ gap: '0.3rem' }}>
         <button
           type="button"
           className={`btn btn-sm ${aba === 'recomendacoes' ? 'btn-primary' : ''}`}
@@ -123,81 +70,6 @@ export default function AssistenteMapa({
           <Wand2 size={13} /> Planta
         </button>
       </div>
-
-      {aba === 'gemini' && (
-        <form onSubmit={handleGerarGemini} className="stack" style={{ gap: '0.55rem' }}>
-          <span className="muted" style={{ fontSize: '0.8rem' }}>
-            Descreva o lugar e o Gemini monta as salas, portas, rótulos, pins e notas secretas (100% Free Tier, sem cobrança).
-          </span>
-
-          <textarea
-            rows={3}
-            value={promptGemini}
-            onChange={(e) => setPromptGemini(e.target.value)}
-            placeholder="Ex: Mansão abandonada com porão, 3 cultistas e armadilha na entrada..."
-            required
-          />
-
-          <div className="row" style={{ gap: '0.3rem' }}>
-            {EXEMPLOS_GEMINI.map((ex, i) => (
-              <button
-                key={i}
-                type="button"
-                className="badge"
-                style={{ cursor: 'pointer', textAlign: 'left' }}
-                onClick={() => setPromptGemini(ex)}
-              >
-                {ex.split(' com ')[0]}
-              </button>
-            ))}
-          </div>
-
-          <label className="row" style={{ cursor: 'pointer', fontSize: '0.82rem' }}>
-            <input
-              type="checkbox"
-              checked={limparAntes}
-              onChange={(e) => setLimparAntes(e.target.checked)}
-              style={{ width: 'auto' }}
-            />
-            <span>Limpar terreno atual antes de aplicar</span>
-          </label>
-
-          <div>
-            <button
-              type="button"
-              className="btn btn-sm btn-ghost"
-              onClick={() => setMostrarChave((v) => !v)}
-              style={{ paddingLeft: 0 }}
-            >
-              {mostrarChave ? '▾ Chave gratuita do Google AI Studio (opcional)' : '▸ Configurar chave do Gemini'}
-            </button>
-            {mostrarChave && (
-              <div className="stack" style={{ gap: '0.25rem', marginTop: '0.25rem' }}>
-                <input
-                  type="password"
-                  value={chaveLocal}
-                  onChange={(e) => setChaveLocal(e.target.value)}
-                  placeholder="AIza... (fica só neste navegador)"
-                />
-                <span className="muted" style={{ fontSize: '0.73rem' }}>
-                  Deixe vazio se já publicou a Edge Function no Supabase. Crie grátis sem cartão em{' '}
-                  <code>aistudio.google.com</code>.
-                </span>
-              </div>
-            )}
-          </div>
-
-          {erroGemini && (
-            <div className="badge badge-accent" style={{ borderRadius: 8, padding: '0.45rem 0.65rem' }}>
-              {erroGemini}
-            </div>
-          )}
-
-          <button type="submit" className="btn btn-primary" disabled={gerandoGemini}>
-            <Sparkles size={15} /> {gerandoGemini ? 'Montando mapa...' : 'Gerar mapa com Gemini'}
-          </button>
-        </form>
-      )}
 
       {aba === 'recomendacoes' && (
         <div className="stack" style={{ gap: '0.65rem' }}>

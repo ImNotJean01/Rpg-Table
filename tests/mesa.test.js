@@ -14,7 +14,6 @@ import { aplicarCarimbo } from '../src/components/tabuleiro/assistente/carimbos.
 import { gerarMasmorra } from '../src/components/tabuleiro/assistente/geradorMasmorra.js';
 import { AMBIENTES, RECOMENDACOES_POR_AMBIENTE } from '../src/components/tabuleiro/assistente/recomendacoes.js';
 import { criarHistorico } from '../src/components/tabuleiro/historico.js';
-import { validarMapaGemini } from '../src/lib/geminiMapa.js';
 
 test('parseExpressaoDados interpreta expressões válidas e rejeita inválidas', () => {
   assert.deepEqual(parseExpressaoDados('2d6+3'), { qtd: 2, faces: 6, mod: 3 });
@@ -107,27 +106,4 @@ test('Histórico de desfazer/refazer executa ações na ordem certa', async () =
   assert.equal(hist.podeRefazer(), true);
   await hist.refazer();
   assert.equal(valor, 1);
-});
-
-test('validarMapaGemini sanitiza terrenos, textos e pins do JSON', () => {
-  const raw = `\`\`\`json
-  {
-    "terreno": [
-      { "x": 1, "y": 1, "tipo": "pedra" },
-      { "x": 2, "y": 2, "tipo": "material_inexistente" }
-    ],
-    "textos": [
-      { "x": 2, "y": 2, "texto": "Hall" }
-    ],
-    "pins": [
-      { "x": 3, "y": 3, "nome": "Cultista", "icone": "invalido", "tamanho": "medio", "notas": "DT 15" }
-    ]
-  }
-  \`\`\``;
-  const res = validarMapaGemini(raw);
-  assert.equal(res.terreno['1,1'], 'pedra');
-  assert.equal(res.terreno['2,2'], undefined);
-  assert.equal(res.textos.length, 1);
-  assert.equal(res.pins[0].icone, 'local');
-  assert.equal(res.pins[0].notas, 'DT 15');
 });
