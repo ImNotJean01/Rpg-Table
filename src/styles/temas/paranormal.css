@@ -1,0 +1,12 @@
+[data-tema='paranormal'] {
+  --bg: #0c0b0e;
+  --surface: #15131a;
+  --surface-2: #1f1b27;
+  --border: #2e293b;
+  --text: #edeaf4;
+  --text-muted: #9e98b0;
+  --accent: #c92a42;
+  --accent-hover: #e03550;
+  --accent-2: #7c4dff;
+  --font-display: 'Special Elite', monospace;
+}

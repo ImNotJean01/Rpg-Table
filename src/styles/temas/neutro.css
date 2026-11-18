@@ -1,0 +1,12 @@
+[data-tema='neutro'] {
+  --bg: #101318;
+  --surface: #171b22;
+  --surface-2: #212731;
+  --border: #2d3544;
+  --text: #eef1f6;
+  --text-muted: #9aa4b5;
+  --accent: #d97706;
+  --accent-hover: #f59e0b;
+  --accent-2: #2b8a3e;
+  --font-display: 'Inter', system-ui, sans-serif;
+}
