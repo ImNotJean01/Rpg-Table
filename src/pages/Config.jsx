@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Copy, Download, Save, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase.js';
+import ConfirmModal from '../components/ConfirmModal.jsx';
 
 export default function Config({ campanha, setCampanha, sistema, isMestre }) {
   const navigate = useNavigate();
@@ -11,6 +12,8 @@ export default function Config({ campanha, setCampanha, sistema, isMestre }) {
   const [exportando, setExportando] = useState(false);
   const [atributosTxt, setAtributosTxt] = useState('');
   const [salvo, setSalvo] = useState(false);
+  const [confirmarApagar, setConfirmarApagar] = useState(false);
+  const [apagando, setApagando] = useState(false);
 
   useEffect(() => {
     if (!supabase || !campanha) return;
@@ -194,16 +197,30 @@ export default function Config({ campanha, setCampanha, sistema, isMestre }) {
           type="button"
           className="btn btn-danger"
           style={{ alignSelf: 'flex-start' }}
-          onClick={async () => {
-            if (!supabase) return;
-            if (!confirm(`Apagar permanentemente "${campanha.nome}"? Essa ação não tem volta.`)) return;
-            const { error } = await supabase.from('campanhas').delete().eq('id', campanha.id);
-            if (!error) navigate('/');
-          }}
+          onClick={() => setConfirmarApagar(true)}
         >
           <Trash2 size={15} /> Apagar campanha
         </button>
       </div>
+
+      <ConfirmModal
+        aberto={confirmarApagar}
+        titulo="Apagar campanha"
+        mensagem={`Apagar permanentemente "${campanha.nome}"? Essa ação remove história, fichas, NPCs, criaturas, pistas e mapas e não tem volta.`}
+        textoConfirmar="Sim, apagar campanha"
+        carregando={apagando}
+        onConfirmar={async () => {
+          if (!supabase) return;
+          setApagando(true);
+          try {
+            const { error } = await supabase.from('campanhas').delete().eq('id', campanha.id);
+            if (!error) navigate('/');
+          } finally {
+            setApagando(false);
+          }
+        }}
+        onCancelar={() => setConfirmarApagar(false)}
+      />
     </div>
   );
 }

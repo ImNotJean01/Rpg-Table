@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, Compass, KeyRound, Plus, Shield, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase.js';
 import { SISTEMAS } from '../sistemas/index.js';
+import ConfirmModal from '../components/ConfirmModal.jsx';
 
 const MODELO_SOBRE = `## Premissa
 Descreva em poucas linhas qual é a missão e o clima da campanha.
@@ -28,6 +29,8 @@ export default function Campanhas({ user }) {
   const [codigo, setCodigo] = useState('');
   const [erro, setErro] = useState('');
   const [criando, setCriando] = useState(false);
+  const [campanhaParaApagar, setCampanhaParaApagar] = useState(null);
+  const [apagando, setApagando] = useState(false);
 
   async function carregar() {
     if (!supabase || !user) return;
@@ -86,19 +89,29 @@ export default function Campanhas({ user }) {
     }
   }
 
-  async function apagarCampanha(e, campanha) {
+  function pedirApagarCampanha(e, campanha) {
     e.preventDefault();
     e.stopPropagation();
-    if (!supabase) return;
-    if (!confirm(`Tem certeza que deseja apagar a mesa "${campanha.nome}"? Tudo (história, fichas, mapas) será perdido.`)) {
-      return;
+    setCampanhaParaApagar(campanha);
+  }
+
+  async function confirmarApagarCampanha() {
+    if (!supabase || !campanhaParaApagar) return;
+    setApagando(true);
+    try {
+      const { error } = await supabase
+        .from('campanhas')
+        .delete()
+        .eq('id', campanhaParaApagar.id);
+      if (error) {
+        setErro(error.message || 'Não foi possível apagar a mesa.');
+        return;
+      }
+      setLista((prev) => prev.filter((item) => item.id !== campanhaParaApagar.id));
+      setCampanhaParaApagar(null);
+    } finally {
+      setApagando(false);
     }
-    const { error } = await supabase.from('campanhas').delete().eq('id', campanha.id);
-    if (error) {
-      setErro(error.message || 'Não foi possível apagar a mesa.');
-      return;
-    }
-    setLista((prev) => prev.filter((item) => item.id !== campanha.id));
   }
 
   return (
@@ -190,7 +203,7 @@ export default function Campanhas({ user }) {
                     <button
                       type="button"
                       className="btn btn-sm btn-danger"
-                      onClick={(e) => apagarCampanha(e, c)}
+                      onClick={(e) => pedirApagarCampanha(e, c)}
                       title="Apagar mesa"
                     >
                       <Trash2 size={14} /> Apagar
@@ -202,6 +215,16 @@ export default function Campanhas({ user }) {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        aberto={Boolean(campanhaParaApagar)}
+        titulo="Apagar mesa"
+        mensagem={`Tem certeza que deseja apagar "${campanhaParaApagar?.nome}"? Toda a história, fichas, NPCs, pistas e mapas serão perdidos permanentemente.`}
+        textoConfirmar="Sim, apagar mesa"
+        carregando={apagando}
+        onConfirmar={confirmarApagarCampanha}
+        onCancelar={() => setCampanhaParaApagar(null)}
+      />
     </div>
   );
 }
