@@ -14,6 +14,7 @@ import { aplicarCarimbo } from '../src/components/tabuleiro/assistente/carimbos.
 import { gerarMasmorra } from '../src/components/tabuleiro/assistente/geradorMasmorra.js';
 import { AMBIENTES, RECOMENDACOES_POR_AMBIENTE } from '../src/components/tabuleiro/assistente/recomendacoes.js';
 import { criarHistorico } from '../src/components/tabuleiro/historico.js';
+import { dividirPorMarcador } from '../src/lib/historia.js';
 
 test('parseExpressaoDados interpreta expressões válidas e rejeita inválidas', () => {
   assert.deepEqual(parseExpressaoDados('2d6+3'), { qtd: 2, faces: 6, mod: 3 });
@@ -106,4 +107,12 @@ test('Histórico de desfazer/refazer executa ações na ordem certa', async () =
   assert.equal(hist.podeRefazer(), true);
   await hist.refazer();
   assert.equal(valor, 1);
+});
+
+test('dividirPorMarcador separa capítulos quando encontra ---fim--- ou ===', () => {
+  assert.deepEqual(dividirPorMarcador('Capítulo único.'), ['Capítulo único.']);
+  assert.deepEqual(
+    dividirPorMarcador('Parte um.\n---fim---\nParte dois.\n===\nParte três.'),
+    ['Parte um.', 'Parte dois.', 'Parte três.']
+  );
 });

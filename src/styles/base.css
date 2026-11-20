@@ -316,6 +316,34 @@ textarea:focus {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
+.divisor-capitulo {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 1.75rem 0;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  letter-spacing: 0.06em;
+}
+
+.divisor-capitulo::before,
+.divisor-capitulo::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+.sumario-historia {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding-bottom: 0.9rem;
+  margin-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
 /* Modal */
 .modal-backdrop {
   position: fixed;
