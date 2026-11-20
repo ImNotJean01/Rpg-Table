@@ -7,7 +7,7 @@ import { dividirPorMarcador } from '../lib/historia.js';
 import ConfirmModal from '../components/ConfirmModal.jsx';
 
 export default function Historia({ campanhaId, isMestre }) {
-  const { rows: capitulos, loading } = useRealtimeTable('capitulos', {
+  const { rows: capitulos, setRows: setCapitulos, loading } = useRealtimeTable('capitulos', {
     filtroValor: campanhaId,
     orderBy: 'ordem',
   });
@@ -75,41 +75,64 @@ export default function Historia({ campanhaId, isMestre }) {
     if (!supabase) return;
     await salvarCapitulo(cap);
     const proxNumero = capitulos.length + 1;
-    await supabase.from('capitulos').insert({
-      campanha_id: campanhaId,
-      titulo: `Capítulo ${proxNumero}`,
-      conteudo: '',
-      publicado: false,
-      ordem: (cap.ordem ?? idx + 1) + 1,
-    });
+    const { data, error } = await supabase
+      .from('capitulos')
+      .insert({
+        campanha_id: campanhaId,
+        titulo: `Capítulo ${proxNumero}`,
+        conteudo: '',
+        publicado: false,
+        ordem: (cap.ordem ?? idx + 1) + 1,
+      })
+      .select()
+      .single();
+    if (!error && data) {
+      setCapitulos((prev) =>
+        prev.some((c) => c.id === data.id) ? prev : [...prev, data]
+      );
+    }
   }
 
   async function iniciarPrimeiroCapitulo() {
     if (!supabase) return;
-    await supabase.from('capitulos').insert({
-      campanha_id: campanhaId,
-      titulo: 'Capítulo 1',
-      conteudo: '',
-      publicado: false,
-      ordem: 1,
-    });
+    const { data, error } = await supabase
+      .from('capitulos')
+      .insert({
+        campanha_id: campanhaId,
+        titulo: 'Capítulo 1',
+        conteudo: '',
+        publicado: false,
+        ordem: 1,
+      })
+      .select()
+      .single();
+    if (!error && data) {
+      setCapitulos((prev) =>
+        prev.some((c) => c.id === data.id) ? prev : [...prev, data]
+      );
+    }
     setModoEscrever(true);
   }
 
   async function alternarPublicado(cap) {
     if (!supabase) return;
-    await supabase
-      .from('capitulos')
-      .update({ publicado: !cap.publicado })
-      .eq('id', cap.id);
+    const prox = !cap.publicado;
+    setCapitulos((prev) =>
+      prev.map((c) => (c.id === cap.id ? { ...c, publicado: prox } : c))
+    );
+    await supabase.from('capitulos').update({ publicado: prox }).eq('id', cap.id);
   }
 
   async function confirmarApagar() {
     if (!supabase || !capParaApagar) return;
     setApagando(true);
     try {
-      await supabase.from('capitulos').delete().eq('id', capParaApagar.id);
-      setCapParaApagar(null);
+      const id = capParaApagar.id;
+      const { error } = await supabase.from('capitulos').delete().eq('id', id);
+      if (!error) {
+        setCapitulos((prev) => prev.filter((c) => c.id !== id));
+        setCapParaApagar(null);
+      }
     } finally {
       setApagando(false);
     }

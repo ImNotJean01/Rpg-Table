@@ -6,7 +6,7 @@ import UploadImagem from '../components/UploadImagem.jsx';
 import Condicoes from '../components/ficha/Condicoes.jsx';
 
 export default function Criaturas({ campanhaId, sistema, isMestre }) {
-  const { rows: criaturas, loading } = useRealtimeTable('criaturas', {
+  const { rows: criaturas, setRows: setCriaturas, loading } = useRealtimeTable('criaturas', {
     filtroValor: campanhaId,
     orderBy: 'criado_em',
   });
@@ -65,7 +65,8 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
 
   async function apagar(id) {
     if (!confirm('Apagar esta criatura?')) return;
-    await supabase.from('criaturas').delete().eq('id', id);
+    const { error } = await supabase.from('criaturas').delete().eq('id', id);
+    if (!error) setCriaturas((prev) => prev.filter((c) => c.id !== id));
   }
 
   const camposCriatura = sistema.criatura?.campos || [];

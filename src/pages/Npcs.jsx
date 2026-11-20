@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase.js';
 import UploadImagem from '../components/UploadImagem.jsx';
 
 export default function Npcs({ campanhaId, isMestre }) {
-  const { rows: npcs, loading } = useRealtimeTable('npcs', {
+  const { rows: npcs, setRows: setNpcs, loading } = useRealtimeTable('npcs', {
     filtroValor: campanhaId,
     orderBy: 'criado_em',
   });
@@ -70,7 +70,8 @@ export default function Npcs({ campanhaId, isMestre }) {
 
   async function apagar(id) {
     if (!confirm('Apagar este NPC?')) return;
-    await supabase.from('npcs').delete().eq('id', id);
+    const { error } = await supabase.from('npcs').delete().eq('id', id);
+    if (!error) setNpcs((prev) => prev.filter((n) => n.id !== id));
   }
 
   return (

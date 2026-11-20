@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase.js';
 import UploadImagem from '../components/UploadImagem.jsx';
 
 export default function Pistas({ campanhaId, isMestre }) {
-  const { rows: pistas, loading } = useRealtimeTable('pistas', {
+  const { rows: pistas, setRows: setPistas, loading } = useRealtimeTable('pistas', {
     filtroValor: campanhaId,
     orderBy: 'criado_em',
     ascending: false,
@@ -49,7 +49,8 @@ export default function Pistas({ campanhaId, isMestre }) {
 
   async function apagar(id) {
     if (!confirm('Apagar esta pista?')) return;
-    await supabase.from('pistas').delete().eq('id', id);
+    const { error } = await supabase.from('pistas').delete().eq('id', id);
+    if (!error) setPistas((prev) => prev.filter((p) => p.id !== id));
   }
 
   return (
