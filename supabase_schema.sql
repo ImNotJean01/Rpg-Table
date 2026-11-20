@@ -570,6 +570,17 @@ create policy "Membros leem e enviam pings" on public.pings_mapa for select usin
 create policy "Membros enviam pings" on public.pings_mapa for insert with check (public.eh_membro(campanha_id));
 
 -- 7. Realtime
+alter table public.capitulos replica identity full;
+alter table public.pistas replica identity full;
+alter table public.personagens replica identity full;
+alter table public.npcs replica identity full;
+alter table public.criaturas replica identity full;
+alter table public.links replica identity full;
+alter table public.iniciativa replica identity full;
+alter table public.cenas replica identity full;
+alter table public.desenhos replica identity full;
+alter table public.pins replica identity full;
+
 alter publication supabase_realtime add table
   public.capitulos,
   public.pistas,

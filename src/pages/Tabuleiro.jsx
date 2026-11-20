@@ -81,7 +81,7 @@ export default function Tabuleiro({
     enabled: Boolean(cenaAtual?.id),
   });
 
-  const { rows: desenhos } = useRealtimeTable('desenhos', {
+  const { rows: desenhos, setRows: setDesenhos } = useRealtimeTable('desenhos', {
     filtroColuna: 'cena_id',
     filtroValor: cenaAtual?.id,
     orderBy: 'criado_em',
@@ -236,7 +236,8 @@ export default function Tabuleiro({
 
   async function apagarPin(pinId) {
     if (!supabase) return;
-    await supabase.from('pins').delete().eq('id', pinId);
+    const { error } = await supabase.from('pins').delete().eq('id', pinId);
+    if (!error) setPins((prev) => prev.filter((p) => p.id !== pinId));
   }
 
   async function atualizarCena(patch) {
@@ -326,7 +327,8 @@ export default function Tabuleiro({
 
   async function apagarDesenho(id) {
     if (!supabase) return;
-    await supabase.from('desenhos').delete().eq('id', id);
+    const { error } = await supabase.from('desenhos').delete().eq('id', id);
+    if (!error) setDesenhos((prev) => prev.filter((d) => d.id !== id));
   }
 
   async function handleAplicarCarimbo(carimboId, gx, gy) {

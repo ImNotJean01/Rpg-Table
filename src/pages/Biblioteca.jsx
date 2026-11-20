@@ -11,7 +11,7 @@ export default function Biblioteca({ campanhaId = null, sistema = null, isMestre
   const [busca, setBusca] = useState('');
   const [aba, setAba] = useState('todos');
 
-  const { rows: linksCampanha } = useRealtimeTable('links', {
+  const { rows: linksCampanha, setRows: setLinksCampanha } = useRealtimeTable('links', {
     filtroValor: campanhaId,
     orderBy: 'ordem',
     enabled: Boolean(campanhaId),
@@ -51,7 +51,8 @@ export default function Biblioteca({ campanhaId = null, sistema = null, isMestre
   }
 
   async function removerLink(id) {
-    await supabase.from('links').delete().eq('id', id);
+    const { error } = await supabase.from('links').delete().eq('id', id);
+    if (!error) setLinksCampanha((prev) => prev.filter((l) => l.id !== id));
   }
 
   return (
