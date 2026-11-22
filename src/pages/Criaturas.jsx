@@ -215,11 +215,9 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
           titulo="Nenhuma criatura no bestiário"
           descricao={
             isMestre
-              ? 'Prepare ameaças e monstros antecipadamente. Eles começam ocultos por padrão e só aparecem para os jogadores quando você revelar.'
+              ? 'Clique em "Nova criatura" no topo para preparar ameaças e monstros antecipadamente (eles ficam ocultos até você revelar).'
               : 'Nenhuma criatura ou ameaça foi registrada ou revelada pelo mestre até agora.'
           }
-          acaoLabel={isMestre && !aberto ? 'Cadastrar primeira criatura' : undefined}
-          onAcao={isMestre && !aberto ? () => setAberto(true) : undefined}
         />
       ) : (
         <div className="grid-cards">

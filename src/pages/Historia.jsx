@@ -207,11 +207,9 @@ export default function Historia({ campanhaId, isMestre }) {
           titulo="A história ainda não começou"
           descricao={
             isMestre
-              ? 'Abra o manuscrito da campanha e comece a registrar os capítulos da aventura.'
+              ? 'Clique em "Começar a escrever" no topo para abrir o manuscrito da campanha e registrar os capítulos da aventura.'
               : 'O mestre ainda não publicou o primeiro capítulo desta crônica.'
           }
-          acaoLabel={isMestre ? 'Começar a escrever' : undefined}
-          onAcao={isMestre ? iniciarPrimeiroCapitulo : undefined}
         />
       ) : modoEscrever && isMestre ? (
         <div className="card dossie-papel stack" style={{ gap: '0.5rem' }}>

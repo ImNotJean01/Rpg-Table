@@ -196,9 +196,7 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
         <EmptyState
           Icon={Users}
           titulo="Nenhum personagem na party ainda"
-          descricao="Crie a ficha do seu aventureiro para acompanhar vida, atributos, perícias, condições e rolar dados ao vivo."
-          acaoLabel="Criar primeiro personagem"
-          onAcao={abrirNovoPersonagem}
+          descricao='Clique em "Novo personagem" no topo para criar a ficha do seu aventureiro e acompanhar vida, atributos, perícias e rolagens ao vivo.'
         />
       ) : (
         <div className="grid-cards">

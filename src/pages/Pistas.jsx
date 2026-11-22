@@ -161,11 +161,9 @@ export default function Pistas({ campanhaId, isMestre }) {
           titulo="Nenhuma pista no mural ainda"
           descricao={
             isMestre
-              ? 'Cadastre cartas, documentos ou fotos e revele em tempo real para os jogadores quando encontrarem na sessão.'
+              ? 'Clique em "Nova pista" no topo para cadastrar cartas, documentos ou fotos e revelar em tempo real na sessão.'
               : 'As evidências e documentos descobertos pelo grupo aparecerão aqui.'
           }
-          acaoLabel={isMestre && !aberto ? 'Cadastrar primeira pista' : undefined}
-          onAcao={isMestre && !aberto ? () => setAberto(true) : undefined}
         />
       ) : (
         <div className="grid-cards">

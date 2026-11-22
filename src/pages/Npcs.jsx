@@ -196,11 +196,9 @@ export default function Npcs({ campanhaId, isMestre }) {
           titulo="Nenhum NPC conhecido ainda"
           descricao={
             isMestre
-              ? 'Adicione aliados, suspeitos ou figuras importantes da história (você pode deixá-los ocultos até o grupo conhecê-los).'
+              ? 'Clique em "Novo NPC" no topo para adicionar aliados, suspeitos ou figuras importantes da história.'
               : 'Os personagens importantes que o grupo encontrar na aventura aparecerão aqui.'
           }
-          acaoLabel={isMestre && !aberto ? 'Cadastrar primeiro NPC' : undefined}
-          onAcao={isMestre && !aberto ? () => setAberto(true) : undefined}
         />
       ) : (
         <div className="grid-cards">
