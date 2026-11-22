@@ -12,9 +12,12 @@ import { AnimatePresence, motion } from 'motion/react';
 import {
   ArrowLeft,
   BookOpenText,
+  CaretDoubleLeft,
+  CaretDoubleRight,
   Compass,
   Fingerprint,
   GearSix,
+  List,
   MapTrifold,
   Scroll,
   Shield,
@@ -50,7 +53,31 @@ function CampanhaShell({ user, perfil, onSignOut }) {
     user.id
   );
   const [pistaNova, setPistaNova] = useState(null);
+  const [menuMobileAberto, setMenuMobileAberto] = useState(false);
+  const [sidebarRecolhida, setSidebarRecolhida] = useState(() => {
+    try {
+      return window.localStorage.getItem('mesa-sidebar-recolhida') === '1';
+    } catch {
+      return false;
+    }
+  });
   const timerRef = useRef(null);
+
+  useEffect(() => {
+    setMenuMobileAberto(false);
+  }, [location.pathname]);
+
+  function alternarSidebarRecolhida() {
+    setSidebarRecolhida((prev) => {
+      const proximo = !prev;
+      try {
+        window.localStorage.setItem('mesa-sidebar-recolhida', proximo ? '1' : '0');
+      } catch {
+        // Ignora caso localStorage esteja indisponível
+      }
+      return proximo;
+    });
+  }
 
   useEffect(() => {
     if (!supabase || !id) return;
@@ -109,10 +136,26 @@ function CampanhaShell({ user, perfil, onSignOut }) {
     ...(isMestre ? [{ to: `${base}/config`, label: 'Config', Icon: GearSix }] : []),
   ];
 
+  const abaAtiva =
+    abas.find(({ to, end }) =>
+      end
+        ? location.pathname === to || location.pathname === `${to}/`
+        : location.pathname.startsWith(to)
+    ) || abas[0];
+
   return (
     <div>
       <header className="topbar">
         <div className="row">
+          <button
+            type="button"
+            className="btn btn-sm campanha-nav-toggle-mobile"
+            onClick={() => setMenuMobileAberto((v) => !v)}
+            aria-label="Abrir menu da campanha"
+          >
+            <List size={16} weight="bold" />
+            <span>{abaAtiva.label}</span>
+          </button>
           <Link to="/" className="btn btn-sm btn-ghost">
             <ArrowLeft size={15} weight="light" /> Mesas
           </Link>
@@ -138,74 +181,136 @@ function CampanhaShell({ user, perfil, onSignOut }) {
         </div>
       </header>
 
-      <nav className="nav-tabs">
-        {abas.map(({ to, label, Icon, end }) => {
-          const ativa = end
-            ? location.pathname === to || location.pathname === `${to}/`
-            : location.pathname.startsWith(to);
-          return (
-            <Link key={to} to={to} className={cn('nav-tab', ativa && 'active')}>
-              {ativa && (
-                <motion.span
-                  layoutId="nav-tab-active"
-                  className="nav-tab-pill"
-                  transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                />
-              )}
-              <Icon size={15} weight={ativa ? 'duotone' : 'light'} />
-              <span>{label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="campanha-shell">
+        {menuMobileAberto && (
+          <div
+            className="campanha-nav-backdrop"
+            onClick={() => setMenuMobileAberto(false)}
+            aria-hidden="true"
+          />
+        )}
 
-      <Routes>
-        <Route
-          index
-          element={<Sobre campanha={campanha} setCampanha={setCampanha} isMestre={isMestre} />}
-        />
-        <Route path="historia" element={<Historia campanhaId={id} isMestre={isMestre} />} />
-        <Route path="pistas" element={<Pistas campanhaId={id} isMestre={isMestre} />} />
-        <Route
-          path="personagens"
-          element={
-            <Personagens campanhaId={id} sistema={sistema} userId={user.id} isMestre={isMestre} />
-          }
-        />
-        <Route path="npcs" element={<Npcs campanhaId={id} isMestre={isMestre} />} />
-        <Route
-          path="criaturas"
-          element={<Criaturas campanhaId={id} sistema={sistema} isMestre={isMestre} />}
-        />
-        <Route
-          path="mesa"
-          element={
-            <Tabuleiro
-              campanhaId={id}
-              sistema={sistema}
-              userId={user.id}
-              autorNome={perfil?.nome || 'Jogador'}
-              isMestre={isMestre}
+        <aside
+          className={cn(
+            'campanha-nav',
+            sidebarRecolhida && 'recolhida',
+            menuMobileAberto && 'aberta-mobile'
+          )}
+          aria-label="Menu da campanha"
+        >
+          <div className="campanha-nav-lista">
+            <div className="campanha-nav-header-mobile">
+              <strong style={{ fontFamily: 'var(--font-display)', fontSize: '0.95rem' }}>
+                {campanha.nome}
+              </strong>
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                onClick={() => setMenuMobileAberto(false)}
+                aria-label="Fechar menu"
+              >
+                <X size={16} weight="light" />
+              </button>
+            </div>
+
+            {abas.map(({ to, label, Icon, end }) => {
+              const ativa = end
+                ? location.pathname === to || location.pathname === `${to}/`
+                : location.pathname.startsWith(to);
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className={cn('nav-tab', ativa && 'active')}
+                  title={sidebarRecolhida ? label : undefined}
+                  onClick={() => setMenuMobileAberto(false)}
+                >
+                  {ativa && (
+                    <motion.span
+                      layoutId="nav-tab-active"
+                      className="nav-tab-pill"
+                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                  <Icon size={17} weight={ativa ? 'duotone' : 'light'} />
+                  <span className="nav-tab-label">{label}</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            className="campanha-nav-collapse-btn"
+            onClick={alternarSidebarRecolhida}
+            title={sidebarRecolhida ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+          >
+            {sidebarRecolhida ? (
+              <CaretDoubleRight size={15} weight="bold" />
+            ) : (
+              <>
+                <CaretDoubleLeft size={15} weight="bold" />
+                <span className="campanha-nav-collapse-label">Recolher menu</span>
+              </>
+            )}
+          </button>
+        </aside>
+
+        <main className="campanha-main">
+          <Routes>
+            <Route
+              index
+              element={<Sobre campanha={campanha} setCampanha={setCampanha} isMestre={isMestre} />}
             />
-          }
-        />
-        <Route path="guia" element={<Guia sistemaAtual={sistema} />} />
-        <Route
-          path="biblioteca"
-          element={<Biblioteca campanhaId={id} sistema={sistema} isMestre={isMestre} />}
-        />
-        <Route
-          path="config"
-          element={
-            <Config
-              campanha={campanha}
-              setCampanha={setCampanha}
-              sistema={sistema}
-              isMestre={isMestre}
+            <Route path="historia" element={<Historia campanhaId={id} isMestre={isMestre} />} />
+            <Route path="pistas" element={<Pistas campanhaId={id} isMestre={isMestre} />} />
+            <Route
+              path="personagens"
+              element={
+                <Personagens
+                  campanhaId={id}
+                  sistema={sistema}
+                  userId={user.id}
+                  isMestre={isMestre}
+                />
+              }
             />
-          }
-        />
-      </Routes>
+            <Route path="npcs" element={<Npcs campanhaId={id} isMestre={isMestre} />} />
+            <Route
+              path="criaturas"
+              element={<Criaturas campanhaId={id} sistema={sistema} isMestre={isMestre} />}
+            />
+            <Route
+              path="mesa"
+              element={
+                <Tabuleiro
+                  campanhaId={id}
+                  sistema={sistema}
+                  userId={user.id}
+                  autorNome={perfil?.nome || 'Jogador'}
+                  isMestre={isMestre}
+                />
+              }
+            />
+            <Route path="guia" element={<Guia sistemaAtual={sistema} />} />
+            <Route
+              path="biblioteca"
+              element={<Biblioteca campanhaId={id} sistema={sistema} isMestre={isMestre} />}
+            />
+            <Route
+              path="config"
+              element={
+                <Config
+                  campanha={campanha}
+                  setCampanha={setCampanha}
+                  sistema={sistema}
+                  isMestre={isMestre}
+                />
+              }
+            />
+          </Routes>
+        </main>
+      </div>
 
       <AnimatePresence>
         {pistaNova && (
