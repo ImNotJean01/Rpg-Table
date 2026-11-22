@@ -1,0 +1,74 @@
+/* ============================================================================
+   ATMOSFERAS & PALETAS POR SISTEMA (CSS-first via data-theme)
+   Para adicionar um novo sistema no futuro, basta criar um novo bloco
+   [data-theme='<id>'] definindo os tokens semânticos abaixo.
+   ============================================================================ */
+
+/* Padrão & Ordem Paranormal (Investigação & Horror) */
+:root,
+[data-theme='ordem'],
+[data-tema='paranormal'] {
+  --bg-base: #09090b;
+  --bg-surface: #121216;
+  --bg-elevated: #1a1a21;
+  --border-subtle: rgba(255, 255, 255, 0.085);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --accent-primary: #dc2626;
+  --accent-primary-hover: #ef4444;
+  --accent-secondary: #7c3aed;
+  --accent-soft: rgba(220, 38, 38, 0.14);
+  --accent-secondary-soft: rgba(124, 58, 237, 0.14);
+  --glow-top: rgba(220, 38, 38, 0.11);
+  --glow-secondary: rgba(124, 58, 237, 0.07);
+  --text-main: #eceaf2;
+  --text-muted: #9894a8;
+  --text-faint: #6c687c;
+  --success: #2f9e44;
+  --warning: #d4a017;
+  --danger: #e03131;
+}
+
+/* D&D (Alta Fantasia / Crônica Clássica) */
+[data-theme='dnd'],
+[data-tema='neutro'] {
+  --bg-base: #0b0d12;
+  --bg-surface: #131722;
+  --bg-elevated: #1b2130;
+  --border-subtle: rgba(200, 169, 106, 0.16);
+  --border-strong: rgba(200, 169, 106, 0.3);
+  --accent-primary: #c8a96a;
+  --accent-primary-hover: #d8bc82;
+  --accent-secondary: #4ea89e;
+  --accent-soft: rgba(200, 169, 106, 0.14);
+  --accent-secondary-soft: rgba(78, 168, 158, 0.14);
+  --glow-top: rgba(200, 169, 106, 0.11);
+  --glow-secondary: rgba(78, 168, 158, 0.08);
+  --text-main: #eee8dc;
+  --text-muted: #9ea5b5;
+  --text-faint: #6f778a;
+  --success: #3fa37c;
+  --warning: #d4a017;
+  --danger: #e05252;
+}
+
+/* Tormenta 20 (Fantasia Épica / Arton) */
+[data-theme='tormenta'] {
+  --bg-base: #0e0b0b;
+  --bg-surface: #191315;
+  --bg-elevated: #241b1e;
+  --border-subtle: rgba(217, 119, 6, 0.18);
+  --border-strong: rgba(225, 29, 72, 0.34);
+  --accent-primary: #e11d48;
+  --accent-primary-hover: #f43f5e;
+  --accent-secondary: #d97706;
+  --accent-soft: rgba(225, 29, 72, 0.15);
+  --accent-secondary-soft: rgba(217, 119, 6, 0.16);
+  --glow-top: rgba(225, 29, 72, 0.12);
+  --glow-secondary: rgba(217, 119, 6, 0.08);
+  --text-main: #f3ece8;
+  --text-muted: #ab989a;
+  --text-faint: #7a6668;
+  --success: #37a169;
+  --warning: #d97706;
+  --danger: #f43f5e;
+}

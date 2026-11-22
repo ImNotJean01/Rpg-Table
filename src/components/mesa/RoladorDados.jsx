@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dices, EyeOff } from 'lucide-react';
+import { DiceFive, EyeSlash, LockSimple } from '@phosphor-icons/react';
 import { supabase } from '../../lib/supabase.js';
 import { parseExpressaoDados, rolarNoServidor } from '../../lib/dados.js';
 
@@ -39,9 +39,12 @@ export default function RoladorDados({ campanhaId, rolagens = [], isMestre }) {
   }
 
   return (
-    <div className="stack" style={{ padding: '0.85rem', flex: 1 }}>
+    <div className="stack" style={{ padding: '0.9rem', flex: 1 }}>
       <div className="space-between">
-        <strong>Rolador de Dados</strong>
+        <div>
+          <span className="section-kicker" style={{ display: 'block', fontSize: '0.68rem' }}>Destino</span>
+          <strong style={{ fontSize: '0.92rem' }}>Rolador de Dados</strong>
+        </div>
         {isMestre && (
           <label className="row" style={{ gap: '0.25rem', cursor: 'pointer', fontSize: '0.8rem' }}>
             <input
@@ -50,7 +53,7 @@ export default function RoladorDados({ campanhaId, rolagens = [], isMestre }) {
               onChange={(e) => setSecreta(e.target.checked)}
               style={{ width: 'auto' }}
             />
-            <EyeOff size={13} /> Secreta
+            <EyeSlash size={13} weight="light" /> Secreta
           </label>
         )}
       </div>
@@ -61,7 +64,7 @@ export default function RoladorDados({ campanhaId, rolagens = [], isMestre }) {
             key={f}
             type="button"
             disabled={rolando}
-            className="btn btn-sm"
+            className="btn btn-sm mono"
             onClick={() => executar({ qtd: 1, faces: f, rotulo: `d${f}` })}
           >
             d{f}
@@ -71,13 +74,14 @@ export default function RoladorDados({ campanhaId, rolagens = [], isMestre }) {
 
       <form onSubmit={handleSubmit} className="row" style={{ gap: '0.35rem' }}>
         <input
+          className="mono"
           value={expressao}
           onChange={(e) => setExpressao(e.target.value)}
           placeholder="Ex: 2d6+3"
           style={{ flex: 1, padding: '0.35rem 0.55rem' }}
         />
         <button type="submit" className="btn btn-sm btn-primary" disabled={rolando}>
-          <Dices size={14} /> Rolar
+          <DiceFive size={15} weight="duotone" /> Rolar
         </button>
       </form>
 
@@ -88,20 +92,23 @@ export default function RoladorDados({ campanhaId, rolagens = [], isMestre }) {
           <div
             key={r.id}
             style={{
-              background: 'var(--bg)',
-              border: `1px solid ${r.secreta ? 'var(--accent-2)' : 'var(--border)'}`,
+              background: 'var(--bg-base)',
+              border: `1px solid ${r.secreta ? 'var(--accent-secondary)' : 'var(--border-subtle)'}`,
               borderRadius: 8,
-              padding: '0.45rem 0.6rem',
+              padding: '0.48rem 0.65rem',
               fontSize: '0.84rem',
             }}
           >
             <div className="space-between">
-              <strong>
-                {r.autor_nome} {r.secreta ? '🔒' : ''}
+              <strong className="row" style={{ gap: '0.3rem' }}>
+                {r.autor_nome}
+                {r.secreta && <LockSimple size={12} weight="duotone" />}
               </strong>
-              <strong style={{ fontSize: '1.05rem', color: 'var(--accent)' }}>{r.total}</strong>
+              <strong className="mono" style={{ fontSize: '1.1rem', color: 'var(--accent-primary)' }}>
+                {r.total}
+              </strong>
             </div>
-            <div className="muted" style={{ fontSize: '0.76rem' }}>
+            <div className="muted mono" style={{ fontSize: '0.75rem', marginTop: '0.12rem' }}>
               {r.rotulo ? `${r.rotulo} · ` : ''}
               <code>{r.expressao}</code> → [{(r.dados || []).join(', ')}]
             </div>

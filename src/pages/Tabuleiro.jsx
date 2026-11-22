@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Eye, Grid, Image, MapPin, Plus } from 'lucide-react';
+import { Eye, GridFour, Image, MapPin, Plus } from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
 import PalcoCompleto from '../components/tabuleiro/PalcoCompleto.jsx';
@@ -487,7 +487,7 @@ export default function Tabuleiro({
             className={`btn btn-sm ${cenaAtual.mostrar_grade !== false ? 'btn-primary' : ''}`}
             onClick={() => atualizarCena({ mostrar_grade: !(cenaAtual.mostrar_grade !== false) })}
           >
-            <Grid size={14} /> Grade
+            <GridFour size={14} weight="duotone" /> Grade
           </button>
         </div>
       )}

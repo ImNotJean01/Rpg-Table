@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pencil, Save } from 'lucide-react';
+import { motion } from 'motion/react';
+import { FloppyDisk, PencilSimple } from '@phosphor-icons/react';
 import { supabase } from '../lib/supabase.js';
 import { renderMarkdown } from '../lib/markdown.js';
 import EditorMarkdown from '../components/EditorMarkdown.jsx';
@@ -29,12 +30,18 @@ export default function Sobre({ campanha, setCampanha, isMestre }) {
   }
 
   return (
-    <div className="container stack">
-      <div className="space-between">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22 }}
+      className="container stack"
+    >
+      <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <h1 style={{ marginBottom: '0.2rem' }}>Sobre a Campanha</h1>
+          <span className="section-kicker">Prólogo &amp; Combinados</span>
+          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Sobre a Campanha</h1>
           <p className="muted" style={{ margin: 0 }}>
-            Premissa, regras da casa, criação de personagem e combinados da mesa.
+            Premissa, regras da casa, criação de personagem e horários da mesa.
           </p>
         </div>
 
@@ -47,7 +54,7 @@ export default function Sobre({ campanha, setCampanha, isMestre }) {
               setEditando(true);
             }}
           >
-            <Pencil size={14} /> Editar apresentação
+            <PencilSimple size={14} weight="duotone" /> Editar apresentação
           </button>
         )}
       </div>
@@ -60,7 +67,7 @@ export default function Sobre({ campanha, setCampanha, isMestre }) {
               Cancelar
             </button>
             <button type="button" className="btn btn-primary" onClick={salvar} disabled={salvando}>
-              <Save size={15} /> {salvando ? 'Salvando...' : 'Salvar'}
+              <FloppyDisk size={15} weight="duotone" /> {salvando ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
         </div>
@@ -74,6 +81,6 @@ export default function Sobre({ campanha, setCampanha, isMestre }) {
           }}
         />
       )}
-    </div>
+    </motion.div>
   );
 }

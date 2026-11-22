@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Lightbulb, MapPin, Stamp, Wand2, X } from 'lucide-react';
+import { Lightbulb, MagicWand, MapPin, Stamp, X } from '@phosphor-icons/react';
 import { CARIMBOS } from './assistente/carimbos.js';
 import { gerarMasmorra } from './assistente/geradorMasmorra.js';
 import { AMBIENTES, RECOMENDACOES_POR_AMBIENTE } from './assistente/recomendacoes.js';
+import { cn } from '../../lib/cn.js';
 
 export default function AssistenteMapa({
   cena,
@@ -43,31 +44,31 @@ export default function AssistenteMapa({
       <div className="space-between">
         <strong>Assistente de Mapa</strong>
         <button type="button" className="btn btn-sm btn-ghost" onClick={onFechar}>
-          <X size={15} />
+          <X size={15} weight="light" />
         </button>
       </div>
 
       <div className="row" style={{ gap: '0.3rem' }}>
         <button
           type="button"
-          className={`btn btn-sm ${aba === 'recomendacoes' ? 'btn-primary' : ''}`}
+          className={cn('btn btn-sm', aba === 'recomendacoes' && 'btn-primary')}
           onClick={() => setAba('recomendacoes')}
         >
-          <Lightbulb size={13} /> Sugestões
+          <Lightbulb size={13} weight="duotone" /> Sugestões
         </button>
         <button
           type="button"
-          className={`btn btn-sm ${aba === 'carimbos' ? 'btn-primary' : ''}`}
+          className={cn('btn btn-sm', aba === 'carimbos' && 'btn-primary')}
           onClick={() => setAba('carimbos')}
         >
-          <Stamp size={13} /> Carimbos
+          <Stamp size={13} weight="duotone" /> Carimbos
         </button>
         <button
           type="button"
-          className={`btn btn-sm ${aba === 'gerar' ? 'btn-primary' : ''}`}
+          className={cn('btn btn-sm', aba === 'gerar' && 'btn-primary')}
           onClick={() => setAba('gerar')}
         >
-          <Wand2 size={13} /> Planta
+          <MagicWand size={13} weight="duotone" /> Planta
         </button>
       </div>
 
@@ -87,13 +88,13 @@ export default function AssistenteMapa({
 
           {grupos.map((g) => (
             <div key={g.espaco} className="stack" style={{ gap: '0.35rem' }}>
-              <strong style={{ fontSize: '0.86rem', color: 'var(--accent)' }}>{g.espaco}</strong>
+              <strong style={{ fontSize: '0.86rem', color: 'var(--accent-primary)' }}>{g.espaco}</strong>
               {g.itens.map((item, idx) => (
                 <div
                   key={idx}
                   style={{
-                    background: 'var(--bg)',
-                    border: '1px solid var(--border)',
+                    background: 'var(--bg-base)',
+                    border: '1px solid var(--border-subtle)',
                     borderRadius: 8,
                     padding: '0.5rem',
                   }}
@@ -105,7 +106,7 @@ export default function AssistenteMapa({
                       className="btn btn-sm btn-primary"
                       onClick={() => onCriarPinSugerido(item)}
                     >
-                      <MapPin size={12} /> + Pin
+                      <MapPin size={12} weight="duotone" /> + Pin
                     </button>
                   </div>
                   <p className="muted" style={{ margin: '0.25rem 0 0', fontSize: '0.78rem' }}>
@@ -127,7 +128,7 @@ export default function AssistenteMapa({
             <button
               key={c.id}
               type="button"
-              className={`btn ${carimboAtivo === c.id ? 'btn-primary' : ''}`}
+              className={cn('btn', carimboAtivo === c.id && 'btn-primary')}
               style={{ justifyContent: 'flex-start', textAlign: 'left', flexDirection: 'column', alignItems: 'flex-start' }}
               onClick={() => onSelecionarCarimbo(carimboAtivo === c.id ? null : c.id)}
             >
@@ -160,7 +161,7 @@ export default function AssistenteMapa({
             </select>
           </div>
           <button type="button" className="btn btn-primary" onClick={handleGerarPlanta}>
-            <Wand2 size={15} /> Gerar rascunho no mapa
+            <MagicWand size={15} weight="duotone" /> Gerar rascunho no mapa
           </button>
         </div>
       )}

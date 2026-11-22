@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Search } from 'lucide-react';
+import { motion } from 'motion/react';
+import { ArrowLeft, MagnifyingGlass } from '@phosphor-icons/react';
 import { listarBibliotecaPorSistema, listarLinksDoSistema } from '../biblioteca/index.js';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
+import { cn } from '../lib/cn.js';
 import CardLink from '../components/CardLink.jsx';
 import FormLink from '../components/FormLink.jsx';
+import SeletorAtmosfera from '../components/SeletorAtmosfera.jsx';
 
 export default function Biblioteca({ campanhaId = null, sistema = null, isMestre = false }) {
   const [busca, setBusca] = useState('');
@@ -56,28 +59,42 @@ export default function Biblioteca({ campanhaId = null, sistema = null, isMestre
   }
 
   return (
-    <div className="container stack" style={{ gap: '1.25rem' }}>
-      <div className="space-between">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22 }}
+      className="container stack"
+      style={{ gap: '1.35rem' }}
+    >
+      <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
           {!dentroDeCampanha && (
-            <Link to="/" className="muted" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.4rem' }}>
-              <ArrowLeft size={14} /> Voltar
+            <Link
+              to="/"
+              className="muted"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.45rem' }}
+            >
+              <ArrowLeft size={14} weight="light" /> Voltar
             </Link>
           )}
-          <h1 style={{ marginBottom: '0.2rem' }}>Biblioteca de Livros e Links</h1>
+          <span className="section-kicker" style={{ display: 'block' }}>Acervo &amp; Referências</span>
+          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Biblioteca de Livros e Links</h1>
           <p className="muted" style={{ margin: 0 }}>
             Links oficiais, referências gratuitas em português e ferramentas úteis para jogar.
           </p>
         </div>
 
-        <div className="row" style={{ minWidth: 240 }}>
-          <Search size={16} className="muted" />
-          <input
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar link..."
-            style={{ width: 220 }}
-          />
+        <div className="row">
+          {!dentroDeCampanha && <SeletorAtmosfera />}
+          <div className="row" style={{ minWidth: 230 }}>
+            <MagnifyingGlass size={16} weight="light" className="muted" />
+            <input
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar link..."
+              style={{ width: 210 }}
+            />
+          </div>
         </div>
       </div>
 
@@ -88,7 +105,7 @@ export default function Biblioteca({ campanhaId = null, sistema = null, isMestre
           <div className="stack">
             <h2 style={{ marginBottom: 0 }}>Links desta campanha</h2>
             {filtrar(linksCampanha).length === 0 ? (
-              <div className="card muted">Nenhum link próprio adicionado ainda.</div>
+              <div className="card dossie-papel muted">Nenhum link próprio adicionado ainda.</div>
             ) : (
               <div className="grid-cards">
                 {filtrar(linksCampanha).map((item) => (
@@ -102,6 +119,8 @@ export default function Biblioteca({ campanhaId = null, sistema = null, isMestre
               </div>
             )}
           </div>
+
+          <hr className="hairline" />
 
           <div className="stack">
             <h2 style={{ marginBottom: 0 }}>Livros e referências ({sistema?.nome})</h2>
@@ -117,7 +136,7 @@ export default function Biblioteca({ campanhaId = null, sistema = null, isMestre
           <div className="row">
             <button
               type="button"
-              className={`btn btn-sm ${aba === 'todos' ? 'btn-primary' : ''}`}
+              className={cn('btn btn-sm', aba === 'todos' && 'btn-primary')}
               onClick={() => setAba('todos')}
             >
               Todos
@@ -126,7 +145,7 @@ export default function Biblioteca({ campanhaId = null, sistema = null, isMestre
               <button
                 key={g.id}
                 type="button"
-                className={`btn btn-sm ${aba === g.id ? 'btn-primary' : ''}`}
+                className={cn('btn btn-sm', aba === g.id && 'btn-primary')}
                 onClick={() => setAba(g.id)}
               >
                 {g.nome}
@@ -152,6 +171,6 @@ export default function Biblioteca({ campanhaId = null, sistema = null, isMestre
             })}
         </>
       )}
-    </div>
+    </motion.div>
   );
 }

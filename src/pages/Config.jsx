@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Copy, Download, Save, Trash2 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Copy, DownloadSimple, FloppyDisk, Trash } from '@phosphor-icons/react';
 import { supabase } from '../lib/supabase.js';
+import { cn } from '../lib/cn.js';
 import ConfirmModal from '../components/ConfirmModal.jsx';
 
 export default function Config({ campanha, setCampanha, sistema, isMestre }) {
@@ -120,17 +122,35 @@ export default function Config({ campanha, setCampanha, sistema, isMestre }) {
   }
 
   return (
-    <div className="container stack" style={{ gap: '1.25rem' }}>
-      <h1 style={{ marginBottom: 0 }}>Configurações da Campanha</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22 }}
+      className="container stack"
+      style={{ gap: '1.25rem' }}
+    >
+      <div>
+        <span className="section-kicker">Controle do Mestre</span>
+        <h1 style={{ margin: '0.2rem 0 0' }}>Configurações da Campanha</h1>
+      </div>
 
       <div className="card stack">
         <strong>Código de convite para os jogadores</strong>
         <div className="row">
-          <code style={{ fontSize: '1.25rem', padding: '0.35rem 0.75rem', background: 'var(--bg)', borderRadius: 8 }}>
+          <code
+            style={{
+              fontSize: '1.25rem',
+              padding: '0.38rem 0.85rem',
+              background: 'var(--bg-base)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 8,
+              letterSpacing: '0.08em',
+            }}
+          >
             {campanha.codigo_convite}
           </code>
           <button type="button" className="btn btn-sm" onClick={copiarCodigo}>
-            <Copy size={14} /> {copiado ? 'Copiado!' : 'Copiar'}
+            <Copy size={14} weight="duotone" /> {copiado ? 'Copiado!' : 'Copiar'}
           </button>
         </div>
       </div>
@@ -154,7 +174,7 @@ export default function Config({ campanha, setCampanha, sistema, isMestre }) {
 
         <div className="row">
           <button type="submit" className="btn btn-primary">
-            <Save size={15} /> Salvar configurações
+            <FloppyDisk size={15} weight="duotone" /> Salvar configurações
           </button>
           {salvo && <span className="badge badge-success">Salvo!</span>}
         </div>
@@ -164,9 +184,18 @@ export default function Config({ campanha, setCampanha, sistema, isMestre }) {
         <strong>Membros da mesa ({membros.length})</strong>
         <div className="stack" style={{ gap: '0.4rem' }}>
           {membros.map((m) => (
-            <div key={m.user_id} className="space-between" style={{ padding: '0.4rem 0.6rem', background: 'var(--bg)', borderRadius: 8 }}>
+            <div
+              key={m.user_id}
+              className="space-between"
+              style={{
+                padding: '0.45rem 0.7rem',
+                background: 'var(--bg-base)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 8,
+              }}
+            >
               <span>{m.perfis?.nome || 'Jogador'}</span>
-              <span className={`badge ${m.papel === 'mestre' ? 'badge-accent' : ''}`}>{m.papel}</span>
+              <span className={cn('badge', m.papel === 'mestre' && 'badge-accent')}>{m.papel}</span>
             </div>
           ))}
         </div>
@@ -184,12 +213,12 @@ export default function Config({ campanha, setCampanha, sistema, isMestre }) {
           onClick={exportarBackup}
           disabled={exportando}
         >
-          <Download size={15} /> {exportando ? 'Exportando...' : 'Exportar Backup (.json)'}
+          <DownloadSimple size={15} weight="duotone" /> {exportando ? 'Exportando...' : 'Exportar Backup (.json)'}
         </button>
       </div>
 
-      <div className="card stack" style={{ borderColor: 'rgba(224,49,49,0.45)' }}>
-        <strong style={{ color: '#ff8787' }}>Zona de Perigo</strong>
+      <div className="card stack" style={{ borderColor: 'rgba(224,49,49,0.42)' }}>
+        <strong style={{ color: '#ff9e9e' }}>Zona de Perigo</strong>
         <p className="muted" style={{ margin: 0 }}>
           Apagar esta campanha remove permanentemente a história, fichas, NPCs, criaturas, pistas e mapas para todos os jogadores.
         </p>
@@ -199,7 +228,7 @@ export default function Config({ campanha, setCampanha, sistema, isMestre }) {
           style={{ alignSelf: 'flex-start' }}
           onClick={() => setConfirmarApagar(true)}
         >
-          <Trash2 size={15} /> Apagar campanha
+          <Trash size={15} weight="duotone" /> Apagar campanha
         </button>
       </div>
 
@@ -221,6 +250,6 @@ export default function Config({ campanha, setCampanha, sistema, isMestre }) {
         }}
         onCancelar={() => setConfirmarApagar(false)}
       />
-    </div>
+    </motion.div>
   );
 }

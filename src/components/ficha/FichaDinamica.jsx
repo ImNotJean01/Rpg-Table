@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dices, Plus, Trash2 } from 'lucide-react';
+import { DiceFive, Plus, Trash } from '@phosphor-icons/react';
 import Condicoes from './Condicoes.jsx';
 import UploadImagem from '../UploadImagem.jsx';
 
@@ -130,7 +130,7 @@ export default function FichaDinamica({
                 height: 56,
                 borderRadius: '50%',
                 objectFit: 'cover',
-                border: '2px solid var(--accent)',
+                border: '2px solid var(--accent-primary)',
               }}
             />
           )}
@@ -191,10 +191,10 @@ export default function FichaDinamica({
           };
           const pct = val.max > 0 ? Math.min(100, Math.max(0, (val.atual / val.max) * 100)) : 0;
           return (
-            <div key={rec.id} className="card stack" style={{ gap: '0.45rem', padding: '0.75rem' }}>
+            <div key={rec.id} className="card stack" style={{ gap: '0.45rem', padding: '0.8rem' }}>
               <div className="space-between">
-                <strong style={{ fontSize: '0.9rem' }}>{rec.nome}</strong>
-                <span className="muted" style={{ fontSize: '0.85rem' }}>
+                <strong style={{ fontSize: '0.88rem' }}>{rec.nome}</strong>
+                <span className="muted mono" style={{ fontSize: '0.86rem' }}>
                   {val.atual} / {val.max}
                 </span>
               </div>
@@ -205,27 +205,29 @@ export default function FichaDinamica({
                 <div className="row" style={{ gap: '0.35rem' }}>
                   <button
                     type="button"
-                    className="btn btn-sm"
+                    className="btn btn-sm mono"
                     onClick={() => ajustarRecurso(rec.id, -1, rec.padrao)}
                   >
                     −1
                   </button>
                   <button
                     type="button"
-                    className="btn btn-sm"
+                    className="btn btn-sm mono"
                     onClick={() => ajustarRecurso(rec.id, +1, rec.padrao)}
                   >
                     +1
                   </button>
                   <input
+                    className="mono"
                     type="number"
                     value={val.atual}
                     onChange={(e) => setRecurso(rec.id, 'atual', e.target.value)}
                     style={{ width: 64, padding: '0.25rem 0.4rem' }}
                     title="Atual"
                   />
-                  <span className="muted">/</span>
+                  <span className="muted mono">/</span>
                   <input
+                    className="mono"
                     type="number"
                     value={val.max}
                     onChange={(e) => setRecurso(rec.id, 'max', e.target.value)}
@@ -241,7 +243,9 @@ export default function FichaDinamica({
 
       {/* Atributos */}
       <div>
-        <span className="muted">Atributos (clique no dado para rolar)</span>
+        <span className="section-kicker" style={{ marginBottom: '0.35rem' }}>
+          Atributos — clique no dado para rolar
+        </span>
         <div
           className="grid-cards"
           style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', marginTop: '0.35rem' }}
@@ -249,14 +253,19 @@ export default function FichaDinamica({
           {(sistema.atributos || []).map((atr) => {
             const val = dados.atributos?.[atr.id] ?? 1;
             return (
-              <div key={atr.id} className="card stack" style={{ alignItems: 'center', gap: '0.35rem', padding: '0.65rem' }}>
-                <strong>{atr.sigla}</strong>
+              <div
+                key={atr.id}
+                className="card stack"
+                style={{ alignItems: 'center', gap: '0.38rem', padding: '0.7rem' }}
+              >
+                <strong className="mono" style={{ letterSpacing: '0.08em' }}>{atr.sigla}</strong>
                 <input
+                  className="mono"
                   type="number"
                   value={val}
                   disabled={!podeEditar}
                   onChange={(e) => setAtributo(atr.id, e.target.value)}
-                  style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.1rem' }}
+                  style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.15rem' }}
                 />
                 {onRolar && (
                   <button
@@ -265,7 +274,7 @@ export default function FichaDinamica({
                     onClick={() => onRolar(`${nome} — ${atr.nome}`, sistema.teste(val, 0))}
                     title={`Rolar ${atr.nome}`}
                   >
-                    <Dices size={14} /> Rolar
+                    <DiceFive size={14} weight="duotone" /> Rolar
                   </button>
                 )}
               </div>
@@ -298,6 +307,7 @@ export default function FichaDinamica({
                 </select>
               ) : (
                 <input
+                  className={c.tipo === 'numero' ? 'mono' : ''}
                   type={c.tipo === 'numero' ? 'number' : 'text'}
                   value={val}
                   disabled={!podeEditar}
@@ -327,15 +337,15 @@ export default function FichaDinamica({
                   className="row"
                   style={{
                     justifyContent: 'space-between',
-                    background: 'var(--bg)',
-                    border: '1px solid var(--border)',
+                    background: 'var(--bg-base)',
+                    border: '1px solid var(--border-subtle)',
                     borderRadius: 8,
-                    padding: '0.35rem 0.5rem',
+                    padding: '0.38rem 0.55rem',
                   }}
                 >
                   <div style={{ minWidth: 95 }}>
                     <div style={{ fontSize: '0.86rem', fontWeight: 500 }}>{per.nome}</div>
-                    <div className="muted" style={{ fontSize: '0.72rem' }}>
+                    <div className="muted mono" style={{ fontSize: '0.72rem' }}>
                       {per.atributo.toUpperCase()} +{nivel.bonus}
                     </div>
                   </div>
@@ -361,7 +371,7 @@ export default function FichaDinamica({
                         }
                         title={`Rolar ${per.nome}`}
                       >
-                        <Dices size={13} />
+                        <DiceFive size={13} weight="duotone" />
                       </button>
                     )}
                   </div>
@@ -385,7 +395,7 @@ export default function FichaDinamica({
                   className="btn btn-sm"
                   onClick={() => addItemLista(lista.id, lista.campos)}
                 >
-                  <Plus size={14} /> Adicionar
+                  <Plus size={14} weight="duotone" /> Adicionar
                 </button>
               )}
             </div>
@@ -398,10 +408,10 @@ export default function FichaDinamica({
                     key={idx}
                     className="row"
                     style={{
-                      background: 'var(--bg)',
+                      background: 'var(--bg-base)',
                       padding: '0.5rem',
                       borderRadius: 8,
-                      border: '1px solid var(--border)',
+                      border: '1px solid var(--border-subtle)',
                     }}
                   >
                     {lista.campos.map((campo) =>
@@ -441,7 +451,7 @@ export default function FichaDinamica({
                         className="btn btn-sm btn-danger"
                         onClick={() => removeItemLista(lista.id, idx)}
                       >
-                        <Trash2 size={14} />
+                        <Trash size={14} weight="light" />
                       </button>
                     )}
                   </div>

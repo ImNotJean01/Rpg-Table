@@ -1,4 +1,5 @@
-import { ExternalLink, Trash2 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { ArrowSquareOut, Trash } from '@phosphor-icons/react';
 
 const NOMES_CATEGORIA = {
   oficial: 'Oficial',
@@ -9,12 +10,17 @@ const NOMES_CATEGORIA = {
 
 export default function CardLink({ item, podeRemover, onRemover }) {
   return (
-    <div className="card stack" style={{ justifyContent: 'space-between' }}>
-      <div className="stack" style={{ gap: '0.4rem' }}>
+    <motion.div
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.16 }}
+      className="card card-interactive stack"
+      style={{ justifyContent: 'space-between' }}
+    >
+      <div className="stack" style={{ gap: '0.45rem' }}>
         <div className="row" style={{ justifyContent: 'space-between' }}>
           <div className="row" style={{ gap: '0.35rem' }}>
             <span className="badge">{NOMES_CATEGORIA[item.categoria] || item.categoria}</span>
-            <span className="badge">{item.idioma === 'pt' ? '🇧🇷 PT-BR' : '🇺🇸 EN'}</span>
+            <span className="badge">{item.idioma === 'pt' ? 'PT-BR' : 'EN'}</span>
             {item.gratis && <span className="badge badge-success">Grátis</span>}
           </div>
           {podeRemover && (
@@ -24,7 +30,7 @@ export default function CardLink({ item, podeRemover, onRemover }) {
               onClick={() => onRemover(item.id)}
               title="Remover link"
             >
-              <Trash2 size={14} />
+              <Trash size={14} weight="light" />
             </button>
           )}
         </div>
@@ -39,8 +45,8 @@ export default function CardLink({ item, podeRemover, onRemover }) {
         className="btn btn-sm"
         style={{ alignSelf: 'flex-start' }}
       >
-        <ExternalLink size={14} /> Abrir site
+        <ArrowSquareOut size={14} weight="duotone" /> Abrir site
       </a>
-    </div>
+    </motion.div>
   );
 }

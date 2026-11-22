@@ -1,22 +1,23 @@
 import {
-  BrickWall,
+  ArrowClockwise,
+  ArrowCounterClockwise,
   Circle,
   CloudFog,
   Eraser,
   Hand,
-  Minus,
-  Pen,
-  Puzzle,
-  Redo2,
+  LineSegment,
+  PenNib,
+  PuzzlePiece,
   Ruler,
-  Sparkles,
+  Sparkle,
   Square,
-  Type,
-  Undo2,
-} from 'lucide-react';
+  TextT,
+  Wall,
+} from '@phosphor-icons/react';
 import { TERRENOS } from './texturas.js';
+import { cn } from '../../lib/cn.js';
 
-const CORES_DESENHO = ['#eceaf2', '#c92a42', '#7c4dff', '#1c7ed6', '#2b8a3e', '#d4a017', '#e67700'];
+const CORES_DESENHO = ['#eceaf2', '#dc2626', '#7c3aed', '#4ea89e', '#2f9e44', '#c8a96a', '#d97706'];
 
 export default function Ferramentas({
   isMestre,
@@ -40,17 +41,17 @@ export default function Ferramentas({
   const botoesBase = [
     { id: 'mao', label: 'Mover / Pins', icone: Hand, todos: true },
     { id: 'regua', label: 'Régua', icone: Ruler, todos: true },
-    { id: 'ping', label: 'Ping (Alt+clique)', icone: Sparkles, todos: true },
+    { id: 'ping', label: 'Ping (Alt+clique)', icone: Sparkle, todos: true },
   ];
 
   const botoesMestre = [
-    { id: 'terreno', label: 'Terreno', icone: BrickWall },
+    { id: 'terreno', label: 'Terreno', icone: Wall },
     { id: 'borracha', label: 'Borracha', icone: Eraser },
-    { id: 'caneta', label: 'Caneta', icone: Pen },
-    { id: 'linha', label: 'Linha', icone: Minus },
+    { id: 'caneta', label: 'Caneta', icone: PenNib },
+    { id: 'linha', label: 'Linha', icone: LineSegment },
     { id: 'ret', label: 'Retângulo', icone: Square },
     { id: 'circulo', label: 'Círculo', icone: Circle },
-    { id: 'texto', label: 'Texto', icone: Type },
+    { id: 'texto', label: 'Texto', icone: TextT },
     { id: 'nevoa', label: 'Névoa', icone: CloudFog },
   ];
 
@@ -62,23 +63,24 @@ export default function Ferramentas({
       style={{
         gap: '0.45rem',
         padding: '0.5rem 1rem',
-        background: 'var(--surface)',
-        borderBottom: '1px solid var(--border)',
+        background: 'var(--bg-surface)',
+        borderBottom: '1px solid var(--border-subtle)',
       }}
     >
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <div className="row" style={{ gap: '0.3rem' }}>
           {lista.map((b) => {
             const Icon = b.icone;
+            const ativa = ferramenta === b.id;
             return (
               <button
                 key={b.id}
                 type="button"
-                className={`btn btn-sm ${ferramenta === b.id ? 'btn-primary' : ''}`}
+                className={cn('btn btn-sm', ativa && 'btn-primary')}
                 onClick={() => setFerramenta(b.id)}
                 title={b.label}
               >
-                <Icon size={14} /> {b.label}
+                <Icon size={14} weight={ativa ? 'duotone' : 'light'} /> {b.label}
               </button>
             );
           })}
@@ -88,10 +90,10 @@ export default function Ferramentas({
           <div className="row" style={{ gap: '0.3rem' }}>
             <button
               type="button"
-              className={`btn btn-sm ${assistenteAberto ? 'btn-primary' : ''}`}
+              className={cn('btn btn-sm', assistenteAberto && 'btn-primary')}
               onClick={onToggleAssistente}
             >
-              <Puzzle size={14} /> Assistente de Mapa
+              <PuzzlePiece size={14} weight="duotone" /> Assistente de Mapa
             </button>
             <button
               type="button"
@@ -100,7 +102,7 @@ export default function Ferramentas({
               onClick={onDesfazer}
               title="Desfazer (Ctrl+Z)"
             >
-              <Undo2 size={14} />
+              <ArrowCounterClockwise size={14} weight="light" />
             </button>
             <button
               type="button"
@@ -109,13 +111,12 @@ export default function Ferramentas({
               onClick={onRefazer}
               title="Refazer (Ctrl+Y)"
             >
-              <Redo2 size={14} />
+              <ArrowClockwise size={14} weight="light" />
             </button>
           </div>
         )}
       </div>
 
-      {/* Sub-barra contextual da ferramenta */}
       {isMestre && ferramenta === 'terreno' && (
         <div className="row" style={{ gap: '0.35rem' }}>
           <span className="muted" style={{ fontSize: '0.8rem' }}>Pincel:</span>
@@ -127,7 +128,7 @@ export default function Ferramentas({
             <button
               key={p.id}
               type="button"
-              className={`btn btn-sm ${pincelTamanho === p.id ? 'btn-primary' : ''}`}
+              className={cn('btn btn-sm mono', pincelTamanho === p.id && 'btn-primary')}
               onClick={() => setPincelTamanho(p.id)}
             >
               {p.label}
@@ -138,7 +139,7 @@ export default function Ferramentas({
             <button
               key={t.id}
               type="button"
-              className={`btn btn-sm ${terrenoTipo === t.id ? 'btn-primary' : ''}`}
+              className={cn('btn btn-sm', terrenoTipo === t.id && 'btn-primary')}
               onClick={() => setTerrenoTipo(t.id)}
               style={{ gap: '0.35rem' }}
             >
@@ -170,7 +171,7 @@ export default function Ferramentas({
                 height: 22,
                 borderRadius: '50%',
                 background: c,
-                border: corDesenho === c ? '3px solid #fff' : '1px solid var(--border)',
+                border: corDesenho === c ? '3px solid #fff' : '1px solid var(--border-subtle)',
                 cursor: 'pointer',
               }}
             />
@@ -182,7 +183,7 @@ export default function Ferramentas({
         <div className="row" style={{ gap: '0.5rem' }}>
           <button
             type="button"
-            className={`btn btn-sm ${fogAtivo ? 'btn-primary' : ''}`}
+            className={cn('btn btn-sm', fogAtivo && 'btn-primary')}
             onClick={onToggleFog}
           >
             {fogAtivo ? 'Névoa LIGADA (jogadores só veem área revelada)' : 'Névoa DESLIGADA'}

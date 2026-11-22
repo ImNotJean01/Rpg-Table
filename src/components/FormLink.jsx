@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ListPlus, Plus } from 'lucide-react';
+import { ListPlus, Plus } from '@phosphor-icons/react';
 
 export function parseLoteLinks(texto) {
   return texto
@@ -92,7 +92,8 @@ export default function FormLink({ onAdicionar, onAdicionarLote }) {
               setErro('');
             }}
           >
-            <ListPlus size={14} /> {modoLote ? 'Adicionar um por vez' : 'Importar vários de uma vez'}
+            <ListPlus size={14} weight="duotone" />{' '}
+            {modoLote ? 'Adicionar um por vez' : 'Importar vários de uma vez'}
           </button>
         )}
       </div>
@@ -111,7 +112,7 @@ export default function FormLink({ onAdicionar, onAdicionarLote }) {
           />
           <div className="row" style={{ justifyContent: 'flex-end' }}>
             <button type="submit" className="btn btn-primary btn-sm" disabled={salvando}>
-              <ListPlus size={15} /> {salvando ? 'Importando...' : 'Importar lista'}
+              <ListPlus size={15} weight="duotone" /> {salvando ? 'Importando...' : 'Importar lista'}
             </button>
           </div>
         </form>
@@ -148,8 +149,8 @@ export default function FormLink({ onAdicionar, onAdicionarLote }) {
             <div>
               <label className="muted">Idioma</label>
               <select value={idioma} onChange={(e) => setIdioma(e.target.value)}>
-                <option value="pt">🇧🇷 Português</option>
-                <option value="en">🇺🇸 Inglês</option>
+                <option value="pt">Português (PT-BR)</option>
+                <option value="en">Inglês (EN)</option>
               </select>
             </div>
           </div>
@@ -175,7 +176,7 @@ export default function FormLink({ onAdicionar, onAdicionarLote }) {
             </label>
 
             <button type="submit" className="btn btn-primary btn-sm" disabled={salvando}>
-              <Plus size={15} /> {salvando ? 'Salvando...' : 'Adicionar link'}
+              <Plus size={15} weight="duotone" /> {salvando ? 'Salvando...' : 'Adicionar link'}
             </button>
           </div>
         </form>

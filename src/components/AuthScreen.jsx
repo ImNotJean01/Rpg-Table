@@ -1,7 +1,19 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Compass, Eye, EyeOff, KeyRound, LogIn, Mail, UserPlus } from 'lucide-react';
+import { motion } from 'motion/react';
+import {
+  BookOpenText,
+  Compass,
+  EnvelopeSimple,
+  Eye,
+  EyeSlash,
+  Key,
+  SignIn,
+  UserPlus,
+} from '@phosphor-icons/react';
 import { formatAuthError, isSupabaseConfigured, supabase } from '../lib/supabase.js';
+import { cn } from '../lib/cn.js';
+import SeletorAtmosfera from './SeletorAtmosfera.jsx';
 
 export default function AuthScreen() {
   const [modo, setModo] = useState('login'); // 'login' | 'cadastro' | 'esqueci' | 'magic'
@@ -53,21 +65,27 @@ export default function AuthScreen() {
         });
         if (error) throw error;
         if (!data.session) {
-          setAviso('Conta criada! Verifique seu e-mail para confirmar (ou tente entrar se a confirmação estiver desligada).');
+          setAviso(
+            'Conta criada! Verifique seu e-mail para confirmar (ou tente entrar se a confirmação estiver desligada).'
+          );
         }
       } else if (modo === 'esqueci') {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
           redirectTo: redirectUrl,
         });
         if (error) throw error;
-        setAviso('Enviamos um link para o seu e-mail para redefinir a senha. Confira também a caixa de spam.');
+        setAviso(
+          'Enviamos um link para o seu e-mail para redefinir a senha. Confira também a caixa de spam.'
+        );
       } else if (modo === 'magic') {
         const { error } = await supabase.auth.signInWithOtp({
           email: email.trim(),
           options: { emailRedirectTo: redirectUrl },
         });
         if (error) throw error;
-        setAviso('Enviamos um link de acesso direto para o seu e-mail! Basta clicar nele para entrar.');
+        setAviso(
+          'Enviamos um link de acesso direto para o seu e-mail! Basta clicar nele para entrar.'
+        );
       }
     } catch (err) {
       setErro(formatAuthError(err));
@@ -77,17 +95,28 @@ export default function AuthScreen() {
   }
 
   return (
-    <div className="container" style={{ maxWidth: 460, paddingTop: '3rem' }}>
-      <div className="card stack">
-        <div>
-          <h1 style={{ marginBottom: '0.25rem' }}>Mesa</h1>
-          <p className="muted" style={{ margin: 0 }}>
-            História, fichas, pistas e tabuleiro ao vivo para a sua mesa de RPG.
-          </p>
+    <div className="container" style={{ maxWidth: 480, paddingTop: '3.25rem' }}>
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.28 }}
+        className="card dossie-papel stack"
+      >
+        <div className="space-between" style={{ alignItems: 'flex-start' }}>
+          <div>
+            <span className="section-kicker">Crônicas &amp; Tabuleiro</span>
+            <h1 style={{ margin: '0.2rem 0 0.25rem' }}>Mesa</h1>
+            <p className="muted" style={{ margin: 0 }}>
+              História, fichas, pistas e tabuleiro ao vivo para a sua campanha.
+            </p>
+          </div>
+          <SeletorAtmosfera />
         </div>
 
+        <hr className="hairline" />
+
         {!isSupabaseConfigured ? (
-          <div className="card" style={{ background: 'var(--surface-2)' }}>
+          <div className="card" style={{ background: 'var(--bg-elevated)' }}>
             <strong>Falta conectar o Supabase</strong>
             <p className="muted" style={{ marginBottom: 0 }}>
               Crie um arquivo <code>.env</code> na pasta do projeto com{' '}
@@ -101,25 +130,25 @@ export default function AuthScreen() {
             <div className="row" style={{ gap: '0.35rem' }}>
               <button
                 type="button"
-                className={`btn btn-sm ${modo === 'login' ? 'btn-primary' : ''}`}
+                className={cn('btn btn-sm', modo === 'login' && 'btn-primary')}
                 onClick={() => trocarModo('login')}
               >
-                <LogIn size={14} /> Entrar
+                <SignIn size={14} weight="duotone" /> Entrar
               </button>
               <button
                 type="button"
-                className={`btn btn-sm ${modo === 'cadastro' ? 'btn-primary' : ''}`}
+                className={cn('btn btn-sm', modo === 'cadastro' && 'btn-primary')}
                 onClick={() => trocarModo('cadastro')}
               >
-                <UserPlus size={14} /> Criar conta
+                <UserPlus size={14} weight="duotone" /> Criar conta
               </button>
               <button
                 type="button"
-                className={`btn btn-sm ${modo === 'magic' ? 'btn-primary' : ''}`}
+                className={cn('btn btn-sm', modo === 'magic' && 'btn-primary')}
                 onClick={() => trocarModo('magic')}
                 title="Entrar com link no e-mail sem precisar de senha"
               >
-                <Mail size={14} /> Link no e-mail
+                <EnvelopeSimple size={14} weight="duotone" /> Link no e-mail
               </button>
             </div>
 
@@ -166,7 +195,11 @@ export default function AuthScreen() {
                       onClick={() => setMostrarSenha((v) => !v)}
                       title={mostrarSenha ? 'Ocultar senha' : 'Ver senha'}
                     >
-                      {mostrarSenha ? <EyeOff size={15} /> : <Eye size={15} />}
+                      {mostrarSenha ? (
+                        <EyeSlash size={15} weight="light" />
+                      ) : (
+                        <Eye size={15} weight="light" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -216,7 +249,7 @@ export default function AuthScreen() {
                   onClick={() => trocarModo('esqueci')}
                   style={{ alignSelf: 'flex-start', paddingLeft: 0 }}
                 >
-                  <KeyRound size={14} /> Esqueci minha senha
+                  <Key size={14} weight="light" /> Esqueci minha senha
                 </button>
               )}
               {modo === 'esqueci' && (
@@ -233,17 +266,17 @@ export default function AuthScreen() {
           </>
         )}
 
-        <hr style={{ borderColor: 'var(--border)', width: '100%' }} />
+        <hr className="hairline" />
 
         <div className="row" style={{ justifyContent: 'space-between' }}>
-          <Link to="/biblioteca" className="btn btn-sm">
-            <BookOpen size={15} /> Biblioteca de Livros
+          <Link to="/biblioteca" className="btn btn-sm btn-ghost">
+            <BookOpenText size={15} weight="duotone" /> Biblioteca de Livros
           </Link>
-          <Link to="/guias/ordem-paranormal" className="btn btn-sm">
-            <Compass size={15} /> Guias dos Sistemas
+          <Link to="/guias/ordem-paranormal" className="btn btn-sm btn-ghost">
+            <Compass size={15} weight="duotone" /> Guias dos Sistemas
           </Link>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

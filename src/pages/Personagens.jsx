@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, X } from 'lucide-react';
+import { motion } from 'motion/react';
+import { DiceFive, Plus, Trash, X } from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
 import { rolarNoServidor } from '../lib/dados.js';
@@ -74,39 +75,48 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
   }
 
   return (
-    <div className="container stack" style={{ gap: '1.25rem' }}>
-      <div className="space-between">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22 }}
+      className="container stack"
+      style={{ gap: '1.25rem' }}
+    >
+      <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <h1 style={{ marginBottom: '0.2rem' }}>Personagens da Party</h1>
+          <span className="section-kicker">Fichas &amp; Agentes</span>
+          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Personagens da Party</h1>
           <p className="muted" style={{ margin: 0 }}>
             Clique em um card para abrir a ficha completa e rolar testes.
           </p>
         </div>
 
         <button type="button" className="btn btn-primary" onClick={criarPersonagem}>
-          <Plus size={16} /> Novo personagem
+          <Plus size={16} weight="duotone" /> Novo personagem
         </button>
       </div>
 
       {avisoRolagem && (
-        <div className="badge badge-accent" style={{ padding: '0.5rem 0.85rem', fontSize: '0.9rem' }}>
-          🎲 {avisoRolagem}
+        <div className="badge badge-accent mono" style={{ padding: '0.5rem 0.85rem', fontSize: '0.88rem' }}>
+          <DiceFive size={16} weight="duotone" /> {avisoRolagem}
         </div>
       )}
 
       {loading ? (
         <span className="muted">Carregando fichas...</span>
       ) : personagens.length === 0 ? (
-        <div className="card muted">Nenhum personagem criado ainda.</div>
+        <div className="card dossie-papel muted">Nenhum personagem criado ainda.</div>
       ) : (
         <div className="grid-cards">
           {personagens.map((p) => {
             const podeEditar = isMestre || p.dono_id === userId;
             return (
-              <div
+              <motion.div
                 key={p.id}
-                className="card stack"
-                style={{ cursor: 'pointer', gap: '0.65rem' }}
+                whileHover={{ y: -2 }}
+                transition={{ duration: 0.16 }}
+                className="card card-interactive stack"
+                style={{ cursor: 'pointer', gap: '0.7rem' }}
                 onClick={() => setSelecionadoId(p.id)}
               >
                 <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -120,16 +130,18 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
                           height: 46,
                           borderRadius: '50%',
                           objectFit: 'cover',
-                          border: '2px solid var(--accent)',
+                          border: '2px solid var(--accent-primary)',
                         }}
                       />
                     ) : (
                       <div
+                        className="mono"
                         style={{
                           width: 46,
                           height: 46,
                           borderRadius: '50%',
-                          background: 'var(--surface-2)',
+                          background: 'var(--bg-elevated)',
+                          border: '1px solid var(--border-subtle)',
                           display: 'grid',
                           placeItems: 'center',
                           fontWeight: 700,
@@ -139,7 +151,7 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
                       </div>
                     )}
                     <div>
-                      <strong style={{ fontSize: '1.05rem' }}>{p.nome}</strong>
+                      <h3 style={{ margin: 0, fontSize: '1.05rem' }}>{p.nome}</h3>
                       <div className="muted" style={{ fontSize: '0.8rem' }}>
                         {p.dados?.campos?.classe || p.dados?.campos?.classe_papel || 'Sem classe'}
                       </div>
@@ -155,7 +167,7 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
                         apagar(p.id);
                       }}
                     >
-                      <Trash2 size={14} />
+                      <Trash size={14} weight="light" />
                     </button>
                   )}
                 </div>
@@ -167,10 +179,10 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
                   };
                   const pct = val.max > 0 ? Math.min(100, Math.max(0, (val.atual / val.max) * 100)) : 0;
                   return (
-                    <div key={rec.id} className="stack" style={{ gap: '0.2rem' }}>
+                    <div key={rec.id} className="stack" style={{ gap: '0.22rem' }}>
                       <div className="space-between" style={{ fontSize: '0.78rem' }}>
                         <span className="muted">{rec.nome}</span>
-                        <span>{val.atual}/{val.max}</span>
+                        <span className="mono">{val.atual}/{val.max}</span>
                       </div>
                       <div className="recurso-bar" style={{ height: 7 }}>
                         <div className="recurso-fill" style={{ width: `${pct}%`, background: rec.cor }} />
@@ -186,7 +198,7 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
                     ))}
                   </div>
                 )}
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -194,14 +206,17 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
 
       {selecionado && (
         <div className="modal-backdrop" onClick={() => setSelecionadoId(null)}>
-          <div
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.18 }}
             className="modal-box stack"
-            style={{ maxWidth: 860 }}
+            style={{ maxWidth: 880 }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="row" style={{ justifyContent: 'flex-end' }}>
-              <button type="button" className="btn btn-sm" onClick={() => setSelecionadoId(null)}>
-                <X size={16} /> Fechar
+              <button type="button" className="btn btn-sm btn-ghost" onClick={() => setSelecionadoId(null)}>
+                <X size={16} weight="light" /> Fechar
               </button>
             </div>
             <FichaDinamica
@@ -215,9 +230,9 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
               onSalvar={salvarFicha}
               onRolar={handleRolar}
             />
-          </div>
+          </motion.div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

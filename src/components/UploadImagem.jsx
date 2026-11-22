@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Upload } from 'lucide-react';
+import { UploadSimple } from '@phosphor-icons/react';
 import { supabase } from '../lib/supabase.js';
 
 export default function UploadImagem({ pasta = 'geral', valor, onChange, label = 'Imagem' }) {
@@ -39,7 +39,7 @@ export default function UploadImagem({ pasta = 'geral', valor, onChange, label =
           style={{ flex: 1, minWidth: 180 }}
         />
         <label className="btn btn-sm" style={{ cursor: 'pointer' }}>
-          <Upload size={14} /> {subindo ? 'Enviando...' : 'Enviar'}
+          <UploadSimple size={14} weight="duotone" /> {subindo ? 'Enviando...' : 'Enviar'}
           <input
             type="file"
             accept="image/*"
@@ -59,8 +59,8 @@ export default function UploadImagem({ pasta = 'geral', valor, onChange, label =
             maxWidth: '100%',
             objectFit: 'contain',
             borderRadius: 8,
-            border: '1px solid var(--border)',
-            background: 'var(--bg)',
+            border: '1px solid var(--border-subtle)',
+            background: 'var(--bg-base)',
           }}
         />
       )}

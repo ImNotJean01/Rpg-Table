@@ -3,28 +3,33 @@ import {
   HashRouter,
   Link,
   Navigate,
-  NavLink,
   Route,
   Routes,
+  useLocation,
   useParams,
 } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import {
-  BookOpen,
+  ArrowLeft,
+  BookOpenText,
   Compass,
-  FileSearch,
-  LogOut,
-  Map,
-  ScrollText,
-  Settings,
+  Fingerprint,
+  GearSix,
+  MapTrifold,
+  Scroll,
   Shield,
+  SignOut,
   Skull,
-  UserCheck,
+  UserCircle,
   Users,
-} from 'lucide-react';
+  X,
+} from '@phosphor-icons/react';
 import { useAuth } from './hooks/useAuth.js';
 import { useCampanha } from './hooks/useCampanha.js';
 import { supabase } from './lib/supabase.js';
+import { cn } from './lib/cn.js';
 import AuthScreen from './components/AuthScreen.jsx';
+import SeletorAtmosfera from './components/SeletorAtmosfera.jsx';
 import Campanhas from './pages/Campanhas.jsx';
 import Sobre from './pages/Sobre.jsx';
 import Guia from './pages/Guia.jsx';
@@ -39,6 +44,7 @@ import Config from './pages/Config.jsx';
 
 function CampanhaShell({ user, perfil, onSignOut }) {
   const { id } = useParams();
+  const location = useLocation();
   const { campanha, setCampanha, isMestre, sistema, loading, erro } = useCampanha(
     id,
     user.id
@@ -75,7 +81,7 @@ function CampanhaShell({ user, perfil, onSignOut }) {
   }, [id]);
 
   if (loading) {
-    return <div className="container muted">Carregando campanha...</div>;
+    return <div className="container muted">Carregando crônica...</div>;
   }
   if (erro || !campanha) {
     return (
@@ -90,60 +96,67 @@ function CampanhaShell({ user, perfil, onSignOut }) {
   }
 
   const base = `/c/${id}`;
+  const abas = [
+    { to: base, label: 'Sobre', Icon: Compass, end: true },
+    { to: `${base}/historia`, label: 'História', Icon: Scroll },
+    { to: `${base}/pistas`, label: 'Pistas', Icon: Fingerprint },
+    { to: `${base}/personagens`, label: 'Personagens', Icon: Users },
+    { to: `${base}/npcs`, label: 'NPCs', Icon: UserCircle },
+    { to: `${base}/criaturas`, label: 'Criaturas', Icon: Skull },
+    { to: `${base}/mesa`, label: 'Tabuleiro', Icon: MapTrifold },
+    { to: `${base}/guia`, label: 'Guia', Icon: BookOpenText },
+    { to: `${base}/biblioteca`, label: 'Biblioteca', Icon: BookOpenText },
+    ...(isMestre ? [{ to: `${base}/config`, label: 'Config', Icon: GearSix }] : []),
+  ];
 
   return (
     <div>
       <header className="topbar">
         <div className="row">
-          <Link to="/" className="btn btn-sm">← Mesas</Link>
+          <Link to="/" className="btn btn-sm btn-ghost">
+            <ArrowLeft size={15} weight="light" /> Mesas
+          </Link>
           <span className="topbar-brand">{campanha.nome}</span>
           <span className="badge">{sistema.nome}</span>
-          <span className={`badge ${isMestre ? 'badge-accent' : ''}`}>
-            {isMestre ? <><Shield size={12} /> Mestre</> : 'Jogador'}
+          <span className={cn('badge', isMestre && 'badge-accent')}>
+            {isMestre ? (
+              <>
+                <Shield size={12} weight="duotone" /> Mestre
+              </>
+            ) : (
+              'Jogador'
+            )}
           </span>
         </div>
 
         <div className="row">
+          <SeletorAtmosfera sistemaTema={sistema.tema} />
           <span className="muted">{perfil?.nome}</span>
-          <button type="button" className="btn btn-sm" onClick={onSignOut}>
-            <LogOut size={14} /> Sair
+          <button type="button" className="btn btn-sm btn-ghost" onClick={onSignOut}>
+            <SignOut size={15} weight="light" /> Sair
           </button>
         </div>
       </header>
 
       <nav className="nav-tabs">
-        <NavLink to={`${base}`} end className="nav-tab">
-          <Compass size={15} /> Sobre
-        </NavLink>
-        <NavLink to={`${base}/historia`} className="nav-tab">
-          <ScrollText size={15} /> História
-        </NavLink>
-        <NavLink to={`${base}/pistas`} className="nav-tab">
-          <FileSearch size={15} /> Pistas
-        </NavLink>
-        <NavLink to={`${base}/personagens`} className="nav-tab">
-          <Users size={15} /> Personagens
-        </NavLink>
-        <NavLink to={`${base}/npcs`} className="nav-tab">
-          <UserCheck size={15} /> NPCs
-        </NavLink>
-        <NavLink to={`${base}/criaturas`} className="nav-tab">
-          <Skull size={15} /> Criaturas
-        </NavLink>
-        <NavLink to={`${base}/mesa`} className="nav-tab">
-          <Map size={15} /> Tabuleiro
-        </NavLink>
-        <NavLink to={`${base}/guia`} className="nav-tab">
-          <Compass size={15} /> Guia do Livro
-        </NavLink>
-        <NavLink to={`${base}/biblioteca`} className="nav-tab">
-          <BookOpen size={15} /> Biblioteca
-        </NavLink>
-        {isMestre && (
-          <NavLink to={`${base}/config`} className="nav-tab">
-            <Settings size={15} /> Config
-          </NavLink>
-        )}
+        {abas.map(({ to, label, Icon, end }) => {
+          const ativa = end
+            ? location.pathname === to || location.pathname === `${to}/`
+            : location.pathname.startsWith(to);
+          return (
+            <Link key={to} to={to} className={cn('nav-tab', ativa && 'active')}>
+              {ativa && (
+                <motion.span
+                  layoutId="nav-tab-active"
+                  className="nav-tab-pill"
+                  transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                />
+              )}
+              <Icon size={15} weight={ativa ? 'duotone' : 'light'} />
+              <span>{label}</span>
+            </Link>
+          );
+        })}
       </nav>
 
       <Routes>
@@ -194,20 +207,39 @@ function CampanhaShell({ user, perfil, onSignOut }) {
         />
       </Routes>
 
-      {pistaNova && (
-        <div className="toast-pista stack" style={{ gap: '0.4rem' }}>
-          <div className="space-between">
-            <strong>🔍 Nova pista revelada!</strong>
-            <button type="button" className="btn btn-sm btn-ghost" onClick={() => setPistaNova(null)}>
-              ✕
-            </button>
-          </div>
-          <div>{pistaNova.titulo}</div>
-          <Link to={`${base}/pistas`} className="btn btn-sm btn-primary" onClick={() => setPistaNova(null)}>
-            Ver no Mural de Pistas
-          </Link>
-        </div>
-      )}
+      <AnimatePresence>
+        {pistaNova && (
+          <motion.div
+            initial={{ opacity: 0, y: 18, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.97 }}
+            transition={{ duration: 0.22 }}
+            className="toast-pista stack"
+            style={{ gap: '0.45rem' }}
+          >
+            <div className="space-between">
+              <strong className="row" style={{ gap: '0.4rem' }}>
+                <Fingerprint size={16} weight="duotone" /> Nova pista revelada
+              </strong>
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                onClick={() => setPistaNova(null)}
+              >
+                <X size={14} weight="light" />
+              </button>
+            </div>
+            <div>{pistaNova.titulo}</div>
+            <Link
+              to={`${base}/pistas`}
+              className="btn btn-sm btn-primary"
+              onClick={() => setPistaNova(null)}
+            >
+              Abrir no Mural de Pistas
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -238,8 +270,14 @@ function NovaSenhaScreen({ onConcluir }) {
   }
 
   return (
-    <div className="container" style={{ maxWidth: 420, paddingTop: '3rem' }}>
-      <form onSubmit={salvar} className="card stack">
+    <div className="container" style={{ maxWidth: 420, paddingTop: '3.5rem' }}>
+      <motion.form
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        onSubmit={salvar}
+        className="card dossie-papel stack"
+      >
+        <span className="section-kicker">Recuperação de Acesso</span>
         <h2 style={{ margin: 0 }}>Definir nova senha</h2>
         <p className="muted" style={{ margin: 0 }}>
           Digite sua nova senha abaixo para continuar na Mesa.
@@ -264,7 +302,7 @@ function NovaSenhaScreen({ onConcluir }) {
         <button type="submit" className="btn btn-primary" disabled={salvando}>
           {salvando ? 'Salvando...' : 'Salvar nova senha'}
         </button>
-      </form>
+      </motion.form>
     </div>
   );
 }
@@ -296,11 +334,14 @@ export default function App() {
               element={
                 <>
                   <header className="topbar">
-                    <span className="topbar-brand">Mesa — RPG</span>
+                    <span className="topbar-brand">
+                      <Scroll size={19} weight="duotone" /> Mesa
+                    </span>
                     <div className="row">
+                      <SeletorAtmosfera />
                       <span className="muted">{perfil?.nome}</span>
-                      <button type="button" className="btn btn-sm" onClick={signOut}>
-                        <LogOut size={14} /> Sair
+                      <button type="button" className="btn btn-sm btn-ghost" onClick={signOut}>
+                        <SignOut size={15} weight="light" /> Sair
                       </button>
                     </div>
                   </header>

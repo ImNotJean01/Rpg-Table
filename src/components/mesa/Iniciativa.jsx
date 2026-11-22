@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { ChevronRight, Plus, RotateCcw, Trash2 } from 'lucide-react';
+import {
+  ArrowCounterClockwise,
+  CaretRight,
+  Plus,
+  Trash,
+} from '@phosphor-icons/react';
 import { supabase } from '../../lib/supabase.js';
 
 export default function Iniciativa({
@@ -82,16 +87,19 @@ export default function Iniciativa({
   }
 
   return (
-    <div className="stack" style={{ padding: '0.85rem', borderBottom: '1px solid var(--border)' }}>
+    <div className="stack" style={{ padding: '0.9rem', borderBottom: '1px solid var(--border-subtle)' }}>
       <div className="space-between">
-        <strong>Iniciativa — Rodada {rodada}</strong>
+        <div>
+          <span className="section-kicker" style={{ display: 'block', fontSize: '0.68rem' }}>Ordem de Combate</span>
+          <strong className="mono" style={{ fontSize: '0.92rem' }}>Rodada {rodada}</strong>
+        </div>
         {isMestre && (
           <div className="row" style={{ gap: '0.3rem' }}>
             <button type="button" className="btn btn-sm btn-primary" onClick={proximoTurno} title="Próximo turno">
-              <ChevronRight size={14} /> Próximo
+              <CaretRight size={14} weight="bold" /> Próximo
             </button>
             <button type="button" className="btn btn-sm" onClick={resetarRodada} title="Reiniciar para rodada 1">
-              <RotateCcw size={13} />
+              <ArrowCounterClockwise size={13} weight="light" />
             </button>
           </div>
         )}
@@ -110,10 +118,10 @@ export default function Iniciativa({
                 className="row"
                 style={{
                   justifyContent: 'space-between',
-                  padding: '0.4rem 0.55rem',
+                  padding: '0.42rem 0.6rem',
                   borderRadius: 8,
-                  background: ativo ? 'rgba(201, 42, 66, 0.2)' : 'var(--bg)',
-                  border: `1px solid ${ativo ? 'var(--accent)' : 'var(--border)'}`,
+                  background: ativo ? 'var(--accent-soft)' : 'var(--bg-base)',
+                  border: `1px solid ${ativo ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
                 }}
               >
                 <div style={{ minWidth: 0, flex: 1 }}>
@@ -133,7 +141,7 @@ export default function Iniciativa({
                 </div>
 
                 <div className="row" style={{ gap: '0.35rem' }}>
-                  <span className="badge">{item.valor}</span>
+                  <span className="badge mono">{item.valor}</span>
                   {isMestre && (
                     <button
                       type="button"
@@ -141,7 +149,7 @@ export default function Iniciativa({
                       onClick={() => remover(item.id)}
                       style={{ padding: '0.15rem' }}
                     >
-                      <Trash2 size={13} />
+                      <Trash size={13} weight="light" />
                     </button>
                   )}
                 </div>
@@ -161,6 +169,7 @@ export default function Iniciativa({
               style={{ flex: 1, minWidth: 90, padding: '0.35rem 0.5rem' }}
             />
             <input
+              className="mono"
               type="number"
               value={valor}
               onChange={(e) => setValor(e.target.value)}
@@ -168,7 +177,7 @@ export default function Iniciativa({
               title="Valor de iniciativa"
             />
             <button type="submit" className="btn btn-sm">
-              <Plus size={14} />
+              <Plus size={14} weight="duotone" />
             </button>
           </form>
 

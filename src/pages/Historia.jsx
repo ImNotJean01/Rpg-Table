@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, CornerDownLeft, Eye, EyeOff, Pencil, Save, Trash2 } from 'lucide-react';
+import { motion } from 'motion/react';
+import {
+  ArrowElbowDownLeft,
+  BookOpenText,
+  Eye,
+  EyeSlash,
+  FloppyDisk,
+  PencilSimple,
+  Trash,
+} from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
 import { renderMarkdown } from '../lib/markdown.js';
 import { dividirPorMarcador } from '../lib/historia.js';
+import { cn } from '../lib/cn.js';
 import ConfirmModal from '../components/ConfirmModal.jsx';
 
 export default function Historia({ campanhaId, isMestre }) {
@@ -18,7 +28,6 @@ export default function Historia({ campanhaId, isMestre }) {
   const [capParaApagar, setCapParaApagar] = useState(null);
   const [apagando, setApagando] = useState(false);
 
-  // Sincroniza rascunhos locais com os capítulos vindos do banco
   useEffect(() => {
     setRascunhos((prev) => {
       const next = {};
@@ -51,7 +60,6 @@ export default function Historia({ campanhaId, isMestre }) {
         })
         .eq('id', cap.id);
 
-      // Se o usuário digitou ---fim--- ou === no meio do texto, cria os próximos capítulos
       if (partes.length > 1) {
         const novos = partes.slice(1).map((texto, idx) => ({
           campanha_id: campanhaId,
@@ -143,14 +151,21 @@ export default function Historia({ campanhaId, isMestre }) {
   }
 
   return (
-    <div className="container stack" style={{ gap: '1.25rem' }}>
-      <div className="space-between">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22 }}
+      className="container stack"
+      style={{ gap: '1.25rem' }}
+    >
+      <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <h1 style={{ marginBottom: '0.2rem' }}>História da Campanha</h1>
+          <span className="section-kicker">Manuscrito da Campanha</span>
+          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>História</h1>
           <p className="muted" style={{ margin: 0 }}>
             {modoEscrever
               ? 'Escreva de forma contínua. Use "Encerrar capítulo" ou digite ---fim--- em uma linha para abrir o próximo.'
-              : 'Diário contínuo dos acontecimentos e capítulos da aventura.'}
+              : 'Crônica contínua dos acontecimentos e capítulos da aventura.'}
           </p>
         </div>
 
@@ -158,21 +173,21 @@ export default function Historia({ campanhaId, isMestre }) {
           <div className="row">
             {capitulos.length === 0 ? (
               <button type="button" className="btn btn-primary" onClick={iniciarPrimeiroCapitulo}>
-                <Pencil size={15} /> Começar a escrever
+                <PencilSimple size={15} weight="duotone" /> Começar a escrever
               </button>
             ) : (
               <button
                 type="button"
-                className={`btn ${modoEscrever ? '' : 'btn-primary'}`}
+                className={cn('btn', !modoEscrever && 'btn-primary')}
                 onClick={() => setModoEscrever((v) => !v)}
               >
                 {modoEscrever ? (
                   <>
-                    <BookOpen size={15} /> Modo leitura
+                    <BookOpenText size={15} weight="duotone" /> Modo leitura
                   </>
                 ) : (
                   <>
-                    <Pencil size={15} /> Escrever história
+                    <PencilSimple size={15} weight="duotone" /> Escrever história
                   </>
                 )}
               </button>
@@ -203,20 +218,24 @@ export default function Historia({ campanhaId, isMestre }) {
                       flex: 1,
                       minWidth: 200,
                       fontFamily: 'var(--font-display)',
-                      fontSize: '1.15rem',
+                      fontSize: '1.18rem',
                       background: 'transparent',
-                      border: '1px dashed var(--border)',
+                      border: '1px dashed var(--border-subtle)',
                     }}
                   />
 
                   <div className="row" style={{ gap: '0.35rem' }}>
                     <button
                       type="button"
-                      className={`btn btn-sm ${cap.publicado ? 'btn-primary' : ''}`}
+                      className={cn('btn btn-sm', cap.publicado && 'btn-primary')}
                       onClick={() => alternarPublicado(cap)}
                       title={cap.publicado ? 'Visível para jogadores' : 'Rascunho oculto'}
                     >
-                      {cap.publicado ? <Eye size={14} /> : <EyeOff size={14} />}
+                      {cap.publicado ? (
+                        <Eye size={14} weight="duotone" />
+                      ) : (
+                        <EyeSlash size={14} weight="light" />
+                      )}
                       {cap.publicado ? 'Publicado' : 'Rascunho'}
                     </button>
                     <button
@@ -225,7 +244,8 @@ export default function Historia({ campanhaId, isMestre }) {
                       disabled={salvandoId === cap.id}
                       onClick={() => salvarCapitulo(cap)}
                     >
-                      <Save size={14} /> {salvandoId === cap.id ? 'Salvando...' : 'Salvar'}
+                      <FloppyDisk size={14} weight="duotone" />{' '}
+                      {salvandoId === cap.id ? 'Salvando...' : 'Salvar'}
                     </button>
                     <button
                       type="button"
@@ -233,7 +253,7 @@ export default function Historia({ campanhaId, isMestre }) {
                       onClick={() => setCapParaApagar(cap)}
                       title="Apagar capítulo"
                     >
-                      <Trash2 size={14} />
+                      <Trash size={14} weight="light" />
                     </button>
                   </div>
                 </div>
@@ -245,7 +265,7 @@ export default function Historia({ campanhaId, isMestre }) {
                   placeholder="Continue escrevendo a história aqui... (Dica: digite ---fim--- em uma linha sozinha para dividir em um novo capítulo)"
                   style={{
                     background: 'rgba(0,0,0,0.2)',
-                    lineHeight: 1.65,
+                    lineHeight: 1.72,
                   }}
                 />
 
@@ -260,7 +280,7 @@ export default function Historia({ campanhaId, isMestre }) {
                       className="btn btn-primary btn-sm"
                       onClick={() => encerrarEContinuar(cap, idx)}
                     >
-                      <CornerDownLeft size={14} /> Encerrar capítulo e continuar no próximo
+                      <ArrowElbowDownLeft size={14} weight="duotone" /> Encerrar capítulo e continuar no próximo
                     </button>
                   </div>
                 )}
@@ -276,10 +296,10 @@ export default function Historia({ campanhaId, isMestre }) {
                 <button
                   key={cap.id}
                   type="button"
-                  className="btn btn-sm"
+                  className="btn btn-sm btn-ghost"
                   onClick={() => irParaCapitulo(cap.id)}
                 >
-                  {idx + 1}. {cap.titulo}
+                  <span className="mono muted">{String(idx + 1).padStart(2, '0')}</span> {cap.titulo}
                 </button>
               ))}
             </nav>
@@ -318,6 +338,6 @@ export default function Historia({ campanhaId, isMestre }) {
         onConfirmar={confirmarApagar}
         onCancelar={() => setCapParaApagar(null)}
       />
-    </div>
+    </motion.div>
   );
 }

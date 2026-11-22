@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Plus, Trash2 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Eye, EyeSlash, Plus, Trash } from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
+import { cn } from '../lib/cn.js';
 import UploadImagem from '../components/UploadImagem.jsx';
 import Condicoes from '../components/ficha/Condicoes.jsx';
 
@@ -72,10 +74,17 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
   const camposCriatura = sistema.criatura?.campos || [];
 
   return (
-    <div className="container stack" style={{ gap: '1.25rem' }}>
-      <div className="space-between">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22 }}
+      className="container stack"
+      style={{ gap: '1.25rem' }}
+    >
+      <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <h1 style={{ marginBottom: '0.2rem' }}>Bestiário & Criaturas</h1>
+          <span className="section-kicker">Ameaças &amp; Encontros</span>
+          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Bestiário &amp; Criaturas</h1>
           <p className="muted" style={{ margin: 0 }}>
             Monstros ocultos ficam invisíveis até o mestre revelar na hora do encontro.
           </p>
@@ -83,7 +92,7 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
 
         {isMestre && (
           <button type="button" className="btn btn-primary" onClick={() => setAberto((v) => !v)}>
-            <Plus size={16} /> Nova criatura
+            <Plus size={16} weight="duotone" /> Nova criatura
           </button>
         )}
       </div>
@@ -104,6 +113,7 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
             <div>
               <label className="muted">Vida máxima (PV)</label>
               <input
+                className="mono"
                 type="number"
                 value={pvMax}
                 onChange={(e) => setPvMax(e.target.value)}
@@ -124,6 +134,7 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
                   </select>
                 ) : (
                   <input
+                    className={c.tipo === 'numero' ? 'mono' : ''}
                     type={c.tipo === 'numero' ? 'number' : 'text'}
                     value={campos[c.id] || ''}
                     onChange={(e) => setCampos((prev) => ({ ...prev, [c.id]: e.target.value }))}
@@ -171,17 +182,23 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
       {loading ? (
         <span className="muted">Carregando bestiário...</span>
       ) : criaturas.length === 0 ? (
-        <div className="card muted">Nenhuma criatura encontrada ou revelada ainda.</div>
+        <div className="card dossie-papel muted">Nenhuma criatura encontrada ou revelada ainda.</div>
       ) : (
         <div className="grid-cards">
           {criaturas.map((c) => {
             const pv = c.dados?.recursos?.pv || { atual: 0, max: 1 };
             const pct = pv.max > 0 ? Math.min(100, Math.max(0, (pv.atual / pv.max) * 100)) : 0;
             return (
-              <div key={c.id} className="card stack" style={{ justifyContent: 'space-between' }}>
+              <motion.div
+                key={c.id}
+                whileHover={{ y: -2 }}
+                transition={{ duration: 0.16 }}
+                className="card card-interactive stack"
+                style={{ justifyContent: 'space-between' }}
+              >
                 <div className="stack" style={{ gap: '0.55rem' }}>
                   <div className="space-between">
-                    <strong style={{ fontSize: '1.1rem' }}>{c.nome}</strong>
+                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{c.nome}</h3>
                     {isMestre && !c.visivel && <span className="badge badge-warn">Oculta</span>}
                   </div>
 
@@ -194,7 +211,7 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
                         maxHeight: 180,
                         objectFit: 'cover',
                         borderRadius: 8,
-                        border: '1px solid var(--border)',
+                        border: '1px solid var(--border-subtle)',
                       }}
                     />
                   )}
@@ -212,17 +229,17 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
                   <div className="stack" style={{ gap: '0.25rem' }}>
                     <div className="space-between" style={{ fontSize: '0.84rem' }}>
                       <span className="muted">PV</span>
-                      <span>{pv.atual} / {pv.max}</span>
+                      <span className="mono">{pv.atual} / {pv.max}</span>
                     </div>
                     <div className="recurso-bar">
-                      <div className="recurso-fill" style={{ width: `${pct}%`, background: '#c92a42' }} />
+                      <div className="recurso-fill" style={{ width: `${pct}%`, background: 'var(--accent-primary)' }} />
                     </div>
                     {isMestre && (
                       <div className="row" style={{ gap: '0.3rem', marginTop: '0.2rem' }}>
-                        <button type="button" className="btn btn-sm" onClick={() => ajustarPv(c, -5)}>−5</button>
-                        <button type="button" className="btn btn-sm" onClick={() => ajustarPv(c, -1)}>−1</button>
-                        <button type="button" className="btn btn-sm" onClick={() => ajustarPv(c, +1)}>+1</button>
-                        <button type="button" className="btn btn-sm" onClick={() => ajustarPv(c, +5)}>+5</button>
+                        <button type="button" className="btn btn-sm mono" onClick={() => ajustarPv(c, -5)}>−5</button>
+                        <button type="button" className="btn btn-sm mono" onClick={() => ajustarPv(c, -1)}>−1</button>
+                        <button type="button" className="btn btn-sm mono" onClick={() => ajustarPv(c, +1)}>+1</button>
+                        <button type="button" className="btn btn-sm mono" onClick={() => ajustarPv(c, +5)}>+5</button>
                       </div>
                     )}
                   </div>
@@ -242,25 +259,29 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
                 </div>
 
                 {isMestre && (
-                  <div className="space-between">
+                  <div className="space-between" style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
                     <button
                       type="button"
-                      className={`btn btn-sm ${c.visivel ? '' : 'btn-primary'}`}
+                      className={cn('btn btn-sm', !c.visivel && 'btn-primary')}
                       onClick={() => alternarVisivel(c)}
                     >
-                      {c.visivel ? <Eye size={14} /> : <EyeOff size={14} />}
+                      {c.visivel ? (
+                        <Eye size={14} weight="duotone" />
+                      ) : (
+                        <EyeSlash size={14} weight="light" />
+                      )}
                       {c.visivel ? 'Revelada' : 'Revelar'}
                     </button>
                     <button type="button" className="btn btn-sm btn-danger" onClick={() => apagar(c.id)}>
-                      <Trash2 size={14} />
+                      <Trash size={14} weight="light" />
                     </button>
                   </div>
                 )}
-              </div>
+              </motion.div>
             );
           })}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

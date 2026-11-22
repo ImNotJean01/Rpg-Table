@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Trash2, X } from 'lucide-react';
+import { Trash, X } from '@phosphor-icons/react';
 import { supabase } from '../../lib/supabase.js';
 import { ICONES_PIN } from './utils.js';
 
@@ -232,7 +232,7 @@ export default function PainelPin({
                   onFechar();
                 }}
               >
-                <Trash2 size={14} /> Apagar pin
+                <Trash size={14} weight="light" /> Apagar pin
               </button>
               <button type="submit" className="btn btn-primary" disabled={salvando}>
                 {salvando ? 'Salvando...' : 'Salvar pin'}
