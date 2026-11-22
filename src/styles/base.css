@@ -5,34 +5,35 @@
   --radius: 10px;
   --radius-sm: 7px;
 
-  /* Aliases legados para compatibilidade com estilos inline existentes */
+  /* Aliases semânticos para compatibilidade com estilos existentes */
+  --text-main: var(--text-primary);
+  --border-strong: var(--border-accent);
   --bg: var(--bg-base);
   --surface: var(--bg-surface);
   --surface-2: var(--bg-elevated);
   --border: var(--border-subtle);
-  --text: var(--text-main);
+  --text: var(--text-primary);
   --accent: var(--accent-primary);
   --accent-hover: var(--accent-primary-hover);
   --accent-2: var(--accent-secondary);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  background-color: var(--bg-base);
-  color: var(--text-main);
-  color-scheme: dark;
-  font-family: var(--font-sans);
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  position: relative;
+@layer base {
+  html,
+  body,
+  #root {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    color-scheme: dark;
+    font-family: var(--font-sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    transition: background-color 300ms ease-out, color 300ms ease-out;
+  }
 }
 
 /* Iluminação radial sutil no topo */
@@ -217,19 +218,20 @@ label.muted {
   justify-content: center;
   gap: 0.45rem;
   background: var(--bg-elevated);
-  color: var(--text-main);
+  color: var(--text-primary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   padding: 0.5rem 0.92rem;
   cursor: pointer;
   font-weight: 500;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.08s ease;
+  transition: background-color 300ms ease-out, border-color 300ms ease-out, color 300ms ease-out, box-shadow 300ms ease-out, transform 0.08s ease;
 }
 
 .btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--bg-elevated) 82%, var(--text-main) 8%);
-  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--bg-elevated) 85%, var(--text-primary) 7%);
+  border-color: var(--border-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 14px var(--glow-color);
   text-decoration: none;
 }
 
@@ -244,20 +246,16 @@ label.muted {
 
 .btn-primary {
   background: var(--accent-primary);
-  border-color: color-mix(in srgb, var(--accent-primary) 80%, #fff 20%);
-  color: #0b0b0d;
+  border-color: var(--border-accent);
+  color: var(--btn-primary-text);
   font-weight: 600;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 4px 14px var(--accent-soft);
-}
-
-[data-theme='ordem'] .btn-primary,
-[data-theme='tormenta'] .btn-primary {
-  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 4px 18px var(--glow-color);
 }
 
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-primary-hover);
   border-color: var(--accent-primary-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 6px 22px var(--glow-color);
 }
 
 .btn-ghost {
@@ -294,15 +292,16 @@ label.muted {
   border-radius: var(--radius);
   padding: 1.15rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 24px rgba(0, 0, 0, 0.24);
+  transition: background-color 300ms ease-out, border-color 300ms ease-out, box-shadow 300ms ease-out, color 300ms ease-out;
 }
 
 .card-interactive {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: background-color 300ms ease-out, border-color 300ms ease-out, box-shadow 300ms ease-out, transform 0.2s ease;
 }
 
 .card-interactive:hover {
-  border-color: var(--border-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 28px rgba(0, 0, 0, 0.34);
+  border-color: var(--border-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 28px rgba(0, 0, 0, 0.34), 0 0 18px var(--glow-color);
 }
 
 .hairline {
@@ -376,6 +375,7 @@ label.muted {
   justify-content: space-between;
   gap: 0.75rem;
   flex-wrap: wrap;
+  transition: background-color 300ms ease-out, border-color 300ms ease-out;
 }
 
 .topbar-brand {

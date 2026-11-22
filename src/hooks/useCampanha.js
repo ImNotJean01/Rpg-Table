@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { resolverSistema } from '../sistemas/index.js';
+import { useRpgTheme } from '../context/ThemeContext.tsx';
 
 export function useCampanha(campanhaId, userId) {
+  const { syncFromSystem } = useRpgTheme();
   const [campanha, setCampanha] = useState(null);
   const [papel, setPapel] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,19 +50,10 @@ export function useCampanha(campanhaId, userId) {
   const isMestre = papel === 'mestre';
 
   useEffect(() => {
-    const mapaTema = {
-      paranormal: 'ordem',
-      neutro: 'dnd',
-      dnd: 'dnd',
-      tormenta: 'tormenta',
-      ordem: 'ordem',
-    };
-    document.body.dataset.tema = sistema.tema || 'neutro';
-    document.body.dataset.theme = mapaTema[sistema.tema] || 'ordem';
-    return () => {
-      document.body.dataset.tema = 'paranormal';
-    };
-  }, [sistema.tema]);
+    if (campanha?.sistema) {
+      syncFromSystem(sistema.tema);
+    }
+  }, [campanha?.sistema, sistema.tema, syncFromSystem]);
 
   return { campanha, setCampanha, papel, isMestre, sistema, loading, erro, recarregar };
 }

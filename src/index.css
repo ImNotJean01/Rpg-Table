@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   TOKENS DE DESIGN — TAILWIND CSS v4 (@theme) + VARIÁVEIS NATIVAS POR TEMA
+   ============================================================================ */
+
+@theme {
+  --color-base: var(--bg-base);
+  --color-surface: var(--bg-surface);
+  --color-elevated: var(--bg-elevated);
+  --color-subtle: var(--border-subtle);
+  --color-accent-border: var(--border-accent);
+  --color-primary-text: var(--text-primary);
+  --color-muted-text: var(--text-muted);
+  --color-accent: var(--accent-primary);
+  --color-accent-alt: var(--accent-secondary);
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* 1. Ordem Paranormal — Investigação Sobrenatural & Mistério */
+:root,
+[data-theme='ordem'] {
+  --bg-base: #0a0a0d;
+  --bg-surface: #121218;
+  --bg-elevated: #1a1a24;
+  --border-subtle: #262633;
+  --border-accent: rgba(109, 40, 217, 0.58);
+  --text-primary: #f4f4f6;
+  --text-muted: #9ca3af;
+  --accent-primary: #6d28d9;
+  --accent-primary-hover: #7c3aed;
+  --accent-secondary: #06b6d4;
+  --accent-contrast: #06b6d4;
+  --accent-soft: rgba(109, 40, 217, 0.18);
+  --accent-secondary-soft: rgba(6, 182, 212, 0.15);
+  --glow-color: rgba(109, 40, 217, 0.35);
+  --glow-top: rgba(109, 40, 217, 0.14);
+  --glow-secondary: rgba(6, 182, 212, 0.08);
+  --btn-primary-text: #f4f4f6;
+}
+
+/* 2. D&D 5e — Fantasia Épica Clássica */
+[data-theme='dnd'] {
+  --bg-base: #1c1917;
+  --bg-surface: #26221f;
+  --bg-elevated: #322c28;
+  --border-subtle: #3d352e;
+  --border-accent: rgba(217, 119, 6, 0.55);
+  --text-primary: #faf5ee;
+  --text-muted: #a8a29e;
+  --accent-primary: #b91c1c;
+  --accent-primary-hover: #dc2626;
+  --accent-secondary: #d97706;
+  --accent-contrast: #d97706;
+  --accent-soft: rgba(185, 28, 28, 0.2);
+  --accent-secondary-soft: rgba(217, 119, 6, 0.18);
+  --glow-color: rgba(217, 119, 6, 0.25);
+  --glow-top: rgba(185, 28, 28, 0.13);
+  --glow-secondary: rgba(217, 119, 6, 0.09);
+  --btn-primary-text: #faf5ee;
+}
+
+/* 3. Tormenta 20 — Alta Fantasia & Ameaça Rubra */
+[data-theme='tormenta'] {
+  --bg-base: #12070a;
+  --bg-surface: #1d0c11;
+  --bg-elevated: #2a1118;
+  --border-subtle: #3b1520;
+  --border-accent: rgba(225, 29, 72, 0.58);
+  --text-primary: #fff1f2;
+  --text-muted: #e5a3ae;
+  --accent-primary: #e11d48;
+  --accent-primary-hover: #f43f5e;
+  --accent-secondary: #f43f5e;
+  --accent-contrast: #f59e0b;
+  --accent-soft: rgba(225, 29, 72, 0.2);
+  --accent-secondary-soft: rgba(245, 158, 11, 0.16);
+  --glow-color: rgba(225, 29, 72, 0.35);
+  --glow-top: rgba(225, 29, 72, 0.14);
+  --glow-secondary: rgba(245, 158, 11, 0.08);
+  --btn-primary-text: #fff1f2;
+}

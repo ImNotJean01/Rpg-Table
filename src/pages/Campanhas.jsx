@@ -23,6 +23,7 @@ const ICONE_SISTEMA = {
 import { supabase } from '../lib/supabase.js';
 import { SISTEMAS } from '../sistemas/index.js';
 import { cn } from '../lib/cn.js';
+import { useRpgTheme } from '../context/ThemeContext.tsx';
 import ConfirmModal from '../components/ConfirmModal.jsx';
 
 const MODELO_SOBRE = `## Premissa
@@ -42,6 +43,7 @@ Dia, horário e onde vocês jogam (Discord, chamada, presencial).`;
 
 export default function Campanhas({ user }) {
   const navigate = useNavigate();
+  const { syncFromSystem } = useRpgTheme();
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
   const [nome, setNome] = useState('');
@@ -187,7 +189,10 @@ export default function Campanhas({ user }) {
                     role="radio"
                     aria-checked={ativo}
                     className={cn('sistema-option', ativo && 'selecionado')}
-                    onClick={() => setSistema(s.id)}
+                    onClick={() => {
+                      setSistema(s.id);
+                      syncFromSystem(s.tema);
+                    }}
                   >
                     <div className="sistema-option-head">
                       <span className="sistema-option-titulo">
