@@ -111,19 +111,9 @@ export default function Tabuleiro({
       )
       .subscribe();
 
-    async function limparCenaCompleta() {
-    if (!supabase || !cenaAtual) return;
-    if (!confirm('Limpar terreno, desenhos e pins de cenário desta cena? (Pins dos jogadores serão mantidos.)')) return;
-    const limparPatch = {};
-    for (const k of Object.keys(cenaAtual.terreno || {})) limparPatch[k] = null;
-    await Promise.all([
-      Object.keys(limparPatch).length ? enviarPatchTerreno(limparPatch) : Promise.resolve(),
-      supabase.from('desenhos').delete().eq('cena_id', cenaAtual.id),
-      supabase.from('pins').delete().eq('cena_id', cenaAtual.id).is('personagem_id', null),
-    ]);
-  }
-
-  return () => {
+    return () => {
+      for (const t of Object.values(pingsTimers.current)) clearTimeout(t);
+      pingsTimers.current = {};
       supabase.removeChannel(ch);
     };
   }, [cenaAtual?.id]);
@@ -144,19 +134,7 @@ export default function Tabuleiro({
       }
     }
     window.addEventListener('keydown', onKey);
-    async function limparCenaCompleta() {
-    if (!supabase || !cenaAtual) return;
-    if (!confirm('Limpar terreno, desenhos e pins de cenário desta cena? (Pins dos jogadores serão mantidos.)')) return;
-    const limparPatch = {};
-    for (const k of Object.keys(cenaAtual.terreno || {})) limparPatch[k] = null;
-    await Promise.all([
-      Object.keys(limparPatch).length ? enviarPatchTerreno(limparPatch) : Promise.resolve(),
-      supabase.from('desenhos').delete().eq('cena_id', cenaAtual.id),
-      supabase.from('pins').delete().eq('cena_id', cenaAtual.id).is('personagem_id', null),
-    ]);
-  }
-
-  return () => window.removeEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [isMestre, historico]);
 
   async function criarCena() {

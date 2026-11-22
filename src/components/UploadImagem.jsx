@@ -9,6 +9,10 @@ export default function UploadImagem({ pasta = 'geral', valor, onChange, label =
   async function handleFile(e) {
     const file = e.target.files?.[0];
     if (!file || !supabase) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setErro('A imagem precisa ter no máximo 5 MB para economizar espaço no plano gratuito.');
+      return;
+    }
     setErro('');
     setSubindo(true);
     try {
@@ -16,7 +20,7 @@ export default function UploadImagem({ pasta = 'geral', valor, onChange, label =
       const caminho = `${pasta}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error } = await supabase.storage
         .from('imagens')
-        .upload(caminho, file, { upsert: true });
+        .upload(caminho, file, { upsert: true, cacheControl: '86400' });
       if (error) throw error;
 
       const { data } = supabase.storage.from('imagens').getPublicUrl(caminho);
