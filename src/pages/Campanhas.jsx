@@ -25,6 +25,8 @@ import { SISTEMAS } from '../sistemas/index.js';
 import { cn } from '../lib/cn.js';
 import { useRpgTheme } from '../context/ThemeContext.tsx';
 import ConfirmModal from '../components/ConfirmModal.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import SkeletonCards from '../components/SkeletonCards.jsx';
 
 const MODELO_SOBRE = `## Premissa
 Descreva em poucas linhas qual é a missão e o clima da campanha.
@@ -98,11 +100,12 @@ export default function Campanhas({ user }) {
 
   async function entrar(e) {
     e.preventDefault();
-    if (!codigo.trim() || !supabase) return;
+    const codigoLimpo = codigo.trim().replace(/\s+/g, '').toUpperCase();
+    if (!codigoLimpo || !supabase) return;
     setErro('');
     try {
       const { data, error } = await supabase.rpc('entrar_campanha', {
-        p_codigo: codigo.trim(),
+        p_codigo: codigoLimpo,
       });
       if (error) throw error;
       navigate(`/c/${data.id}`);
@@ -263,9 +266,13 @@ export default function Campanhas({ user }) {
         </div>
 
         {loading ? (
-          <span className="muted">Carregando campanhas...</span>
+          <SkeletonCards quantidade={2} altura={135} />
         ) : lista.length === 0 ? (
-          <div className="card dossie-papel muted">Você ainda não participa de nenhuma campanha.</div>
+          <EmptyState
+            Icon={Compass}
+            titulo="Você ainda não participa de nenhuma campanha"
+            descricao="Crie sua primeira mesa no quadro acima para mestrar ou cole o código de convite enviado pelo seu mestre."
+          />
         ) : (
           <div className="grid-cards">
             {lista.map((c) => (

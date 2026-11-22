@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Eye, EyeSlash, Plus, Trash } from '@phosphor-icons/react';
+import { Eye, EyeSlash, Plus, Skull, Trash } from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
 import { cn } from '../lib/cn.js';
 import UploadImagem from '../components/UploadImagem.jsx';
 import Condicoes from '../components/ficha/Condicoes.jsx';
+import ConfirmModal from '../components/ConfirmModal.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import SkeletonCards from '../components/SkeletonCards.jsx';
 
 export default function Criaturas({ campanhaId, sistema, isMestre }) {
   const { rows: criaturas, setRows: setCriaturas, loading } = useRealtimeTable('criaturas', {
@@ -20,6 +23,8 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
   const [pvMax, setPvMax] = useState(40);
   const [acoes, setAcoes] = useState('');
   const [visivel, setVisivel] = useState(false);
+  const [criaturaParaApagar, setCriaturaParaApagar] = useState(null);
+  const [apagando, setApagando] = useState(false);
 
   async function criar(e) {
     e.preventDefault();
@@ -65,10 +70,19 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
     await supabase.from('criaturas').update({ condicoes }).eq('id', c.id);
   }
 
-  async function apagar(id) {
-    if (!confirm('Apagar esta criatura?')) return;
-    const { error } = await supabase.from('criaturas').delete().eq('id', id);
-    if (!error) setCriaturas((prev) => prev.filter((c) => c.id !== id));
+  async function confirmarApagar() {
+    if (!supabase || !criaturaParaApagar) return;
+    setApagando(true);
+    try {
+      const id = criaturaParaApagar.id;
+      const { error } = await supabase.from('criaturas').delete().eq('id', id);
+      if (!error) {
+        setCriaturas((prev) => prev.filter((c) => c.id !== id));
+        setCriaturaParaApagar(null);
+      }
+    } finally {
+      setApagando(false);
+    }
   }
 
   const camposCriatura = sistema.criatura?.campos || [];
@@ -92,7 +106,7 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
 
         {isMestre && (
           <button type="button" className="btn btn-primary" onClick={() => setAberto((v) => !v)}>
-            <Plus size={16} weight="duotone" /> Nova criatura
+            <Plus size={16} weight="duotone" aria-hidden="true" /> Nova criatura
           </button>
         )}
       </div>
@@ -100,10 +114,14 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
       {isMestre && aberto && (
         <form onSubmit={criar} className="card stack">
           <strong>Cadastrar criatura</strong>
-          <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+          <div
+            className="grid-cards"
+            style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}
+          >
             <div>
-              <label className="muted">Nome</label>
+              <label htmlFor="criatura-nome">Nome</label>
               <input
+                id="criatura-nome"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Ex: Zumbi de Sangue"
@@ -111,8 +129,9 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
               />
             </div>
             <div>
-              <label className="muted">Vida máxima (PV)</label>
+              <label htmlFor="criatura-pv">Vida máxima (PV)</label>
               <input
+                id="criatura-pv"
                 className="mono"
                 type="number"
                 value={pvMax}
@@ -121,19 +140,23 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
             </div>
             {camposCriatura.map((c) => (
               <div key={c.id}>
-                <label className="muted">{c.nome}</label>
+                <label htmlFor={`criatura-${c.id}`}>{c.nome}</label>
                 {c.tipo === 'select' ? (
                   <select
+                    id={`criatura-${c.id}`}
                     value={campos[c.id] || ''}
                     onChange={(e) => setCampos((prev) => ({ ...prev, [c.id]: e.target.value }))}
                   >
                     <option value="">—</option>
                     {c.opcoes.map((op) => (
-                      <option key={op} value={op}>{op}</option>
+                      <option key={op} value={op}>
+                        {op}
+                      </option>
                     ))}
                   </select>
                 ) : (
                   <input
+                    id={`criatura-${c.id}`}
                     className={c.tipo === 'numero' ? 'mono' : ''}
                     type={c.tipo === 'numero' ? 'number' : 'text'}
                     value={campos[c.id] || ''}
@@ -152,8 +175,9 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
           />
 
           <div>
-            <label className="muted">Ações, ataques e habilidades</label>
+            <label htmlFor="criatura-acoes">Ações, ataques e habilidades</label>
             <textarea
+              id="criatura-acoes"
               rows={4}
               value={acoes}
               onChange={(e) => setAcoes(e.target.value)}
@@ -162,7 +186,7 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
           </div>
 
           <div className="space-between">
-            <label className="row" style={{ cursor: 'pointer' }}>
+            <label className="row" style={{ cursor: 'pointer', marginBottom: 0 }}>
               <input
                 type="checkbox"
                 checked={visivel}
@@ -172,17 +196,31 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
               <span>Já revelada no bestiário</span>
             </label>
             <div className="row">
-              <button type="button" className="btn" onClick={() => setAberto(false)}>Cancelar</button>
-              <button type="submit" className="btn btn-primary">Salvar criatura</button>
+              <button type="button" className="btn" onClick={() => setAberto(false)}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Salvar criatura
+              </button>
             </div>
           </div>
         </form>
       )}
 
       {loading ? (
-        <span className="muted">Carregando bestiário...</span>
+        <SkeletonCards quantidade={3} altura={180} />
       ) : criaturas.length === 0 ? (
-        <div className="card dossie-papel muted">Nenhuma criatura encontrada ou revelada ainda.</div>
+        <EmptyState
+          Icon={Skull}
+          titulo="Nenhuma criatura no bestiário"
+          descricao={
+            isMestre
+              ? 'Prepare ameaças e monstros antecipadamente. Eles começam ocultos por padrão e só aparecem para os jogadores quando você revelar.'
+              : 'Nenhuma criatura ou ameaça foi registrada ou revelada pelo mestre até agora.'
+          }
+          acaoLabel={isMestre && !aberto ? 'Cadastrar primeira criatura' : undefined}
+          onAcao={isMestre && !aberto ? () => setAberto(true) : undefined}
+        />
       ) : (
         <div className="grid-cards">
           {criaturas.map((c) => {
@@ -206,6 +244,7 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
                     <img
                       src={c.imagem_url}
                       alt={c.nome}
+                      loading="lazy"
                       style={{
                         width: '100%',
                         maxHeight: 180,
@@ -229,17 +268,46 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
                   <div className="stack" style={{ gap: '0.25rem' }}>
                     <div className="space-between" style={{ fontSize: '0.84rem' }}>
                       <span className="muted">PV</span>
-                      <span className="mono">{pv.atual} / {pv.max}</span>
+                      <span className="mono">
+                        {pv.atual} / {pv.max}
+                      </span>
                     </div>
                     <div className="recurso-bar">
-                      <div className="recurso-fill" style={{ width: `${pct}%`, background: 'var(--accent-primary)' }} />
+                      <div
+                        className="recurso-fill"
+                        style={{ width: `${pct}%`, background: 'var(--accent-primary)' }}
+                      />
                     </div>
                     {isMestre && (
                       <div className="row" style={{ gap: '0.3rem', marginTop: '0.2rem' }}>
-                        <button type="button" className="btn btn-sm mono" onClick={() => ajustarPv(c, -5)}>−5</button>
-                        <button type="button" className="btn btn-sm mono" onClick={() => ajustarPv(c, -1)}>−1</button>
-                        <button type="button" className="btn btn-sm mono" onClick={() => ajustarPv(c, +1)}>+1</button>
-                        <button type="button" className="btn btn-sm mono" onClick={() => ajustarPv(c, +5)}>+5</button>
+                        <button
+                          type="button"
+                          className="btn btn-sm mono"
+                          onClick={() => ajustarPv(c, -5)}
+                        >
+                          −5
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm mono"
+                          onClick={() => ajustarPv(c, -1)}
+                        >
+                          −1
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm mono"
+                          onClick={() => ajustarPv(c, +1)}
+                        >
+                          +1
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm mono"
+                          onClick={() => ajustarPv(c, +5)}
+                        >
+                          +5
+                        </button>
                       </div>
                     )}
                   </div>
@@ -259,21 +327,30 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
                 </div>
 
                 {isMestre && (
-                  <div className="space-between" style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+                  <div
+                    className="space-between"
+                    style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}
+                  >
                     <button
                       type="button"
                       className={cn('btn btn-sm', !c.visivel && 'btn-primary')}
                       onClick={() => alternarVisivel(c)}
                     >
                       {c.visivel ? (
-                        <Eye size={14} weight="duotone" />
+                        <Eye size={14} weight="duotone" aria-hidden="true" />
                       ) : (
-                        <EyeSlash size={14} weight="light" />
+                        <EyeSlash size={14} weight="light" aria-hidden="true" />
                       )}
                       {c.visivel ? 'Revelada' : 'Revelar'}
                     </button>
-                    <button type="button" className="btn btn-sm btn-danger" onClick={() => apagar(c.id)}>
-                      <Trash size={14} weight="light" />
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-danger"
+                      onClick={() => setCriaturaParaApagar(c)}
+                      aria-label={`Apagar criatura ${c.nome}`}
+                      title="Apagar criatura"
+                    >
+                      <Trash size={14} weight="light" aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -282,6 +359,16 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
           })}
         </div>
       )}
+
+      <ConfirmModal
+        aberto={Boolean(criaturaParaApagar)}
+        titulo="Apagar criatura"
+        mensagem={`Deseja apagar "${criaturaParaApagar?.nome}" do bestiário?`}
+        textoConfirmar="Sim, apagar"
+        carregando={apagando}
+        onConfirmar={confirmarApagar}
+        onCancelar={() => setCriaturaParaApagar(null)}
+      />
     </motion.div>
   );
 }

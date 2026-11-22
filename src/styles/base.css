@@ -1015,3 +1015,106 @@ a.btn-primary:focus-visible {
   padding: 0.95rem 1.05rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 16px 40px rgba(0, 0, 0, 0.65);
 }
+
+/* ============================================================================
+   UI/UX PRO MAX — ACESSIBILIDADE, EMPTY STATES, SKELETONS & REDUCED MOTION
+   ============================================================================ */
+
+#root {
+  min-height: 100dvh;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+.card,
+.prose {
+  overflow-wrap: anywhere;
+}
+
+.btn,
+.nav-tab,
+.auth-tab-btn,
+.sistema-option,
+.seletor-atmosfera-btn,
+.campanha-nav-collapse-btn,
+.input-icon-right {
+  touch-action: manipulation;
+}
+
+.btn:focus-visible,
+.nav-tab:focus-visible,
+.auth-tab-btn:focus-visible,
+.sistema-option:focus-visible,
+.seletor-atmosfera-btn:focus-visible,
+.campanha-nav-collapse-btn:focus-visible,
+.input-icon-right:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Empty State Acionável */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: 2.2rem 1.5rem;
+}
+
+.empty-state-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 42%, transparent);
+  color: color-mix(in srgb, var(--accent-primary) 78%, #ffffff 22%);
+  box-shadow: 0 0 18px var(--glow-color);
+}
+
+/* Skeleton Shimmer para carregamento progressivo */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-card {
+  pointer-events: none;
+  user-select: none;
+}
+
+.skeleton-line {
+  display: inline-block;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+/* Respeito global a prefers-reduced-motion (WCAG 2.2 / UI Pro Max) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

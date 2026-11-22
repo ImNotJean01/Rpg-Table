@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Eye, EyeSlash, LockSimple, Plus, Trash } from '@phosphor-icons/react';
+import { Eye, EyeSlash, LockSimple, Plus, Trash, UserCircle } from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
 import UploadImagem from '../components/UploadImagem.jsx';
+import ConfirmModal from '../components/ConfirmModal.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import SkeletonCards from '../components/SkeletonCards.jsx';
 
 export default function Npcs({ campanhaId, isMestre }) {
   const { rows: npcs, setRows: setNpcs, loading } = useRealtimeTable('npcs', {
@@ -19,6 +22,8 @@ export default function Npcs({ campanhaId, isMestre }) {
   const [infoPublica, setInfoPublica] = useState('');
   const [segredo, setSegredo] = useState('');
   const [visivel, setVisivel] = useState(true);
+  const [npcParaApagar, setNpcParaApagar] = useState(null);
+  const [apagando, setApagando] = useState(false);
 
   useEffect(() => {
     if (!isMestre || !supabase || npcs.length === 0) return;
@@ -69,10 +74,19 @@ export default function Npcs({ campanhaId, isMestre }) {
     await supabase.from('npcs').update({ visivel: !npc.visivel }).eq('id', npc.id);
   }
 
-  async function apagar(id) {
-    if (!confirm('Apagar este NPC?')) return;
-    const { error } = await supabase.from('npcs').delete().eq('id', id);
-    if (!error) setNpcs((prev) => prev.filter((n) => n.id !== id));
+  async function confirmarApagar() {
+    if (!supabase || !npcParaApagar) return;
+    setApagando(true);
+    try {
+      const id = npcParaApagar.id;
+      const { error } = await supabase.from('npcs').delete().eq('id', id);
+      if (!error) {
+        setNpcs((prev) => prev.filter((n) => n.id !== id));
+        setNpcParaApagar(null);
+      }
+    } finally {
+      setApagando(false);
+    }
   }
 
   return (
@@ -94,7 +108,7 @@ export default function Npcs({ campanhaId, isMestre }) {
 
         {isMestre && (
           <button type="button" className="btn btn-primary" onClick={() => setAberto((v) => !v)}>
-            <Plus size={16} weight="duotone" /> Novo NPC
+            <Plus size={16} weight="duotone" aria-hidden="true" /> Novo NPC
           </button>
         )}
       </div>
@@ -102,18 +116,29 @@ export default function Npcs({ campanhaId, isMestre }) {
       {isMestre && aberto && (
         <form onSubmit={criar} className="card stack">
           <strong>Cadastrar NPC</strong>
-          <div className="grid-cards" style={{ gridTemplateColumns: '1fr 1fr' }}>
-            <input
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Nome (ex: Veríssimo)"
-              required
-            />
-            <input
-              value={papel}
-              onChange={(e) => setPapel(e.target.value)}
-              placeholder="Papel (ex: Líder da Ordem, Delegado)"
-            />
+          <div
+            className="grid-cards"
+            style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))' }}
+          >
+            <div>
+              <label htmlFor="npc-nome">Nome</label>
+              <input
+                id="npc-nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Ex: Veríssimo"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="npc-papel">Papel / Ocupação</label>
+              <input
+                id="npc-papel"
+                value={papel}
+                onChange={(e) => setPapel(e.target.value)}
+                placeholder="Ex: Líder da Ordem, Delegado"
+              />
+            </div>
           </div>
           <UploadImagem
             pasta={`${campanhaId}/npcs`}
@@ -121,20 +146,28 @@ export default function Npcs({ campanhaId, isMestre }) {
             onChange={setImagemUrl}
             label="Retrato do NPC"
           />
-          <textarea
-            rows={3}
-            value={infoPublica}
-            onChange={(e) => setInfoPublica(e.target.value)}
-            placeholder="O que os jogadores já sabem sobre ele..."
-          />
-          <textarea
-            rows={2}
-            value={segredo}
-            onChange={(e) => setSegredo(e.target.value)}
-            placeholder="Segredo do mestre (jogadores nunca veem)"
-          />
+          <div>
+            <label htmlFor="npc-info">Informações públicas</label>
+            <textarea
+              id="npc-info"
+              rows={3}
+              value={infoPublica}
+              onChange={(e) => setInfoPublica(e.target.value)}
+              placeholder="O que os jogadores já sabem sobre ele..."
+            />
+          </div>
+          <div>
+            <label htmlFor="npc-segredo">Segredo do Mestre (privado)</label>
+            <textarea
+              id="npc-segredo"
+              rows={2}
+              value={segredo}
+              onChange={(e) => setSegredo(e.target.value)}
+              placeholder="Segredo do mestre (jogadores nunca veem)"
+            />
+          </div>
           <div className="space-between">
-            <label className="row" style={{ cursor: 'pointer' }}>
+            <label className="row" style={{ cursor: 'pointer', marginBottom: 0 }}>
               <input
                 type="checkbox"
                 checked={visivel}
@@ -144,17 +177,31 @@ export default function Npcs({ campanhaId, isMestre }) {
               <span>Visível para jogadores</span>
             </label>
             <div className="row">
-              <button type="button" className="btn" onClick={() => setAberto(false)}>Cancelar</button>
-              <button type="submit" className="btn btn-primary">Salvar NPC</button>
+              <button type="button" className="btn" onClick={() => setAberto(false)}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Salvar NPC
+              </button>
             </div>
           </div>
         </form>
       )}
 
       {loading ? (
-        <span className="muted">Carregando NPCs...</span>
+        <SkeletonCards quantidade={3} altura={150} />
       ) : npcs.length === 0 ? (
-        <div className="card dossie-papel muted">Nenhum NPC conhecido ainda.</div>
+        <EmptyState
+          Icon={UserCircle}
+          titulo="Nenhum NPC conhecido ainda"
+          descricao={
+            isMestre
+              ? 'Adicione aliados, suspeitos ou figuras importantes da história (você pode deixá-los ocultos até o grupo conhecê-los).'
+              : 'Os personagens importantes que o grupo encontrar na aventura aparecerão aqui.'
+          }
+          acaoLabel={isMestre && !aberto ? 'Cadastrar primeiro NPC' : undefined}
+          onAcao={isMestre && !aberto ? () => setAberto(true) : undefined}
+        />
       ) : (
         <div className="grid-cards">
           {npcs.map((n) => (
@@ -172,6 +219,7 @@ export default function Npcs({ campanhaId, isMestre }) {
                       <img
                         src={n.imagem_url}
                         alt={n.nome}
+                        loading="lazy"
                         style={{
                           width: 48,
                           height: 48,
@@ -183,13 +231,19 @@ export default function Npcs({ campanhaId, isMestre }) {
                     )}
                     <div>
                       <h3 style={{ margin: 0, fontSize: '1.05rem' }}>{n.nome}</h3>
-                      {n.papel && <div className="muted" style={{ fontSize: '0.8rem' }}>{n.papel}</div>}
+                      {n.papel && (
+                        <div className="muted" style={{ fontSize: '0.8rem' }}>
+                          {n.papel}
+                        </div>
+                      )}
                     </div>
                   </div>
                   {isMestre && !n.visivel && <span className="badge badge-warn">Oculto</span>}
                 </div>
 
-                {n.info_publica && <p style={{ margin: 0, fontSize: '0.92rem' }}>{n.info_publica}</p>}
+                {n.info_publica && (
+                  <p style={{ margin: 0, fontSize: '0.92rem' }}>{n.info_publica}</p>
+                )}
 
                 {isMestre && segredos[n.id] && (
                   <div
@@ -201,7 +255,7 @@ export default function Npcs({ campanhaId, isMestre }) {
                     }}
                   >
                     <span className="muted row" style={{ fontSize: '0.75rem', gap: '0.3rem' }}>
-                      <LockSimple size={12} weight="duotone" /> Segredo do mestre
+                      <LockSimple size={12} weight="duotone" aria-hidden="true" /> Segredo do mestre
                     </span>
                     <div style={{ fontSize: '0.85rem', marginTop: '0.2rem' }}>{segredos[n.id]}</div>
                   </div>
@@ -209,17 +263,26 @@ export default function Npcs({ campanhaId, isMestre }) {
               </div>
 
               {isMestre && (
-                <div className="space-between" style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+                <div
+                  className="space-between"
+                  style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}
+                >
                   <button type="button" className="btn btn-sm" onClick={() => alternarVisivel(n)}>
                     {n.visivel ? (
-                      <Eye size={14} weight="duotone" />
+                      <Eye size={14} weight="duotone" aria-hidden="true" />
                     ) : (
-                      <EyeSlash size={14} weight="light" />
+                      <EyeSlash size={14} weight="light" aria-hidden="true" />
                     )}
                     {n.visivel ? 'Visível' : 'Revelar'}
                   </button>
-                  <button type="button" className="btn btn-sm btn-danger" onClick={() => apagar(n.id)}>
-                    <Trash size={14} weight="light" />
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-danger"
+                    onClick={() => setNpcParaApagar(n)}
+                    aria-label={`Apagar NPC ${n.nome}`}
+                    title="Apagar NPC"
+                  >
+                    <Trash size={14} weight="light" aria-hidden="true" />
                   </button>
                 </div>
               )}
@@ -227,6 +290,16 @@ export default function Npcs({ campanhaId, isMestre }) {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        aberto={Boolean(npcParaApagar)}
+        titulo="Apagar NPC"
+        mensagem={`Deseja apagar "${npcParaApagar?.nome}" da lista de NPCs?`}
+        textoConfirmar="Sim, apagar"
+        carregando={apagando}
+        onConfirmar={confirmarApagar}
+        onCancelar={() => setNpcParaApagar(null)}
+      />
     </motion.div>
   );
 }

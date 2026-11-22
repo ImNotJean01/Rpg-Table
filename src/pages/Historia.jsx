@@ -7,6 +7,7 @@ import {
   EyeSlash,
   FloppyDisk,
   PencilSimple,
+  Scroll,
   Trash,
 } from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
@@ -15,6 +16,8 @@ import { renderMarkdown } from '../lib/markdown.js';
 import { dividirPorMarcador } from '../lib/historia.js';
 import { cn } from '../lib/cn.js';
 import ConfirmModal from '../components/ConfirmModal.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import SkeletonCards from '../components/SkeletonCards.jsx';
 
 export default function Historia({ campanhaId, isMestre }) {
   const { rows: capitulos, setRows: setCapitulos, loading } = useRealtimeTable('capitulos', {
@@ -197,11 +200,19 @@ export default function Historia({ campanhaId, isMestre }) {
       </div>
 
       {loading ? (
-        <span className="muted">Carregando história...</span>
+        <SkeletonCards quantidade={2} altura={160} />
       ) : capitulos.length === 0 ? (
-        <div className="card dossie-papel muted">
-          A história ainda não começou.
-        </div>
+        <EmptyState
+          Icon={Scroll}
+          titulo="A história ainda não começou"
+          descricao={
+            isMestre
+              ? 'Abra o manuscrito da campanha e comece a registrar os capítulos da aventura.'
+              : 'O mestre ainda não publicou o primeiro capítulo desta crônica.'
+          }
+          acaoLabel={isMestre ? 'Começar a escrever' : undefined}
+          onAcao={isMestre ? iniciarPrimeiroCapitulo : undefined}
+        />
       ) : modoEscrever && isMestre ? (
         <div className="card dossie-papel stack" style={{ gap: '0.5rem' }}>
           {capitulos.map((cap, idx) => {

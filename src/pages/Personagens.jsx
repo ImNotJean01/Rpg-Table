@@ -7,6 +7,7 @@ import {
   LockKeyOpen,
   Plus,
   Trash,
+  Users,
   X,
 } from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
@@ -15,6 +16,8 @@ import { rolarNoServidor } from '../lib/dados.js';
 import { cn } from '../lib/cn.js';
 import FichaDinamica from '../components/ficha/FichaDinamica.jsx';
 import ConfirmModal from '../components/ConfirmModal.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import SkeletonCards from '../components/SkeletonCards.jsx';
 
 export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
   const { rows: personagens, setRows: setPersonagens, loading } = useRealtimeTable('personagens', {
@@ -188,9 +191,15 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
       )}
 
       {loading ? (
-        <span className="muted">Carregando fichas...</span>
+        <SkeletonCards quantidade={3} altura={170} />
       ) : personagens.length === 0 ? (
-        <div className="card dossie-papel muted">Nenhum personagem criado ainda.</div>
+        <EmptyState
+          Icon={Users}
+          titulo="Nenhum personagem na party ainda"
+          descricao="Crie a ficha do seu aventureiro para acompanhar vida, atributos, perícias, condições e rolar dados ao vivo."
+          acaoLabel="Criar primeiro personagem"
+          onAcao={abrirNovoPersonagem}
+        />
       ) : (
         <div className="grid-cards">
           {personagens.map((p) => {
