@@ -48,7 +48,15 @@ export function useCampanha(campanhaId, userId) {
   const isMestre = papel === 'mestre';
 
   useEffect(() => {
+    const mapaTema = {
+      paranormal: 'ordem',
+      neutro: 'dnd',
+      dnd: 'dnd',
+      tormenta: 'tormenta',
+      ordem: 'ordem',
+    };
     document.body.dataset.tema = sistema.tema || 'neutro';
+    document.body.dataset.theme = mapaTema[sistema.tema] || 'ordem';
     return () => {
       document.body.dataset.tema = 'paranormal';
     };

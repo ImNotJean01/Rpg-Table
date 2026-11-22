@@ -1,8 +1,12 @@
 import ordem from './ordem-paranormal.js';
+import dnd5e from './dnd5e.js';
+import tormenta20 from './tormenta20.js';
 import generico from './generico.js';
 
 export const SISTEMAS = {
   [ordem.id]: ordem,
+  [dnd5e.id]: dnd5e,
+  [tormenta20.id]: tormenta20,
   [generico.id]: generico,
 };
 
