@@ -244,14 +244,12 @@ function CampanhaShell({ user, perfil, onSignOut }) {
             className="campanha-nav-collapse-btn"
             onClick={alternarSidebarRecolhida}
             title={sidebarRecolhida ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+            aria-label={sidebarRecolhida ? 'Expandir menu lateral' : 'Recolher menu lateral'}
           >
             {sidebarRecolhida ? (
               <CaretDoubleRight size={15} weight="bold" />
             ) : (
-              <>
-                <CaretDoubleLeft size={15} weight="bold" />
-                <span className="campanha-nav-collapse-label">Recolher menu</span>
-              </>
+              <CaretDoubleLeft size={15} weight="bold" />
             )}
           </button>
         </aside>
