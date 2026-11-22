@@ -5,16 +5,20 @@ import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
 import { rolarNoServidor } from '../lib/dados.js';
 import FichaDinamica from '../components/ficha/FichaDinamica.jsx';
+import ConfirmModal from '../components/ConfirmModal.jsx';
 
 export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
-  const { rows: personagens, loading } = useRealtimeTable('personagens', {
+  const { rows: personagens, setRows: setPersonagens, loading } = useRealtimeTable('personagens', {
     filtroValor: campanhaId,
     orderBy: 'criado_em',
   });
 
   const [membros, setMembros] = useState([]);
   const [selecionadoId, setSelecionadoId] = useState(null);
+  const [criandoNovo, setCriandoNovo] = useState(false);
   const [avisoRolagem, setAvisoRolagem] = useState('');
+  const [personagemParaApagar, setPersonagemParaApagar] = useState(null);
+  const [apagando, setApagando] = useState(false);
 
   useEffect(() => {
     if (!supabase || !campanhaId) return;
@@ -35,32 +39,67 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
       });
   }, [campanhaId]);
 
-  const selecionado = personagens.find((p) => p.id === selecionadoId) || null;
+  const selecionado = criandoNovo
+    ? { id: 'novo', nome: '', dono_id: userId, condicoes: [], dados: {} }
+    : personagens.find((p) => p.id === selecionadoId) || null;
 
-  async function criarPersonagem() {
-    if (!supabase) return;
-    const { data, error } = await supabase
-      .from('personagens')
-      .insert({
-        campanha_id: campanhaId,
-        dono_id: userId,
-        nome: 'Novo Personagem',
-        dados: {},
-      })
-      .select()
-      .single();
-    if (!error && data) setSelecionadoId(data.id);
+  function abrirNovoPersonagem() {
+    setSelecionadoId(null);
+    setCriandoNovo(true);
+  }
+
+  function fecharModal() {
+    setCriandoNovo(false);
+    setSelecionadoId(null);
   }
 
   async function salvarFicha(payload) {
     if (!supabase || !selecionado) return;
-    await supabase.from('personagens').update(payload).eq('id', selecionado.id);
+    if (criandoNovo) {
+      const { data, error } = await supabase
+        .from('personagens')
+        .insert({
+          campanha_id: campanhaId,
+          ...payload,
+          dono_id: isMestre ? payload.dono_id : userId,
+        })
+        .select()
+        .single();
+      if (!error && data) {
+        setPersonagens((prev) =>
+          prev.some((p) => p.id === data.id) ? prev : [...prev, data]
+        );
+        setCriandoNovo(false);
+        setSelecionadoId(data.id);
+      }
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('personagens')
+      .update(payload)
+      .eq('id', selecionado.id)
+      .select()
+      .single();
+    if (!error && data) {
+      setPersonagens((prev) => prev.map((p) => (p.id === data.id ? data : p)));
+    }
   }
 
-  async function apagar(id) {
-    if (!confirm('Apagar esta ficha?')) return;
-    await supabase.from('personagens').delete().eq('id', id);
-    if (selecionadoId === id) setSelecionadoId(null);
+  async function confirmarApagar() {
+    if (!supabase || !personagemParaApagar) return;
+    setApagando(true);
+    try {
+      const id = personagemParaApagar.id;
+      const { error } = await supabase.from('personagens').delete().eq('id', id);
+      if (!error) {
+        setPersonagens((prev) => prev.filter((p) => p.id !== id));
+        if (selecionadoId === id) setSelecionadoId(null);
+        setPersonagemParaApagar(null);
+      }
+    } finally {
+      setApagando(false);
+    }
   }
 
   async function handleRolar(rotulo, params) {
@@ -91,7 +130,7 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
           </p>
         </div>
 
-        <button type="button" className="btn btn-primary" onClick={criarPersonagem}>
+        <button type="button" className="btn btn-primary" onClick={abrirNovoPersonagem}>
           <Plus size={16} weight="duotone" /> Novo personagem
         </button>
       </div>
@@ -117,7 +156,10 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
                 transition={{ duration: 0.16 }}
                 className="card card-interactive stack"
                 style={{ cursor: 'pointer', gap: '0.7rem' }}
-                onClick={() => setSelecionadoId(p.id)}
+                onClick={() => {
+                  setCriandoNovo(false);
+                  setSelecionadoId(p.id);
+                }}
               >
                 <div className="row" style={{ justifyContent: 'space-between' }}>
                   <div className="row">
@@ -164,7 +206,7 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
                       className="btn btn-sm btn-ghost"
                       onClick={(e) => {
                         e.stopPropagation();
-                        apagar(p.id);
+                        setPersonagemParaApagar(p);
                       }}
                     >
                       <Trash size={14} weight="light" />
@@ -205,7 +247,7 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
       )}
 
       {selecionado && (
-        <div className="modal-backdrop" onClick={() => setSelecionadoId(null)}>
+        <div className="modal-backdrop" onClick={fecharModal}>
           <motion.div
             initial={{ opacity: 0, scale: 0.97, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -214,8 +256,11 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
             style={{ maxWidth: 880 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="row" style={{ justifyContent: 'flex-end' }}>
-              <button type="button" className="btn btn-sm btn-ghost" onClick={() => setSelecionadoId(null)}>
+            <div className="space-between">
+              <span className="section-kicker">
+                {criandoNovo ? 'Novo Personagem (salve para criar)' : 'Ficha do Personagem'}
+              </span>
+              <button type="button" className="btn btn-sm btn-ghost" onClick={fecharModal}>
                 <X size={16} weight="light" /> Fechar
               </button>
             </div>
@@ -226,13 +271,23 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
               campanhaId={campanhaId}
               membros={membros}
               isMestre={isMestre}
-              podeEditar={isMestre || selecionado.dono_id === userId}
+              podeEditar={criandoNovo || isMestre || selecionado.dono_id === userId}
               onSalvar={salvarFicha}
-              onRolar={handleRolar}
+              onRolar={criandoNovo ? null : handleRolar}
             />
           </motion.div>
         </div>
       )}
+
+      <ConfirmModal
+        aberto={Boolean(personagemParaApagar)}
+        titulo="Apagar personagem"
+        mensagem={`Deseja apagar a ficha de "${personagemParaApagar?.nome}"?`}
+        textoConfirmar="Sim, apagar"
+        carregando={apagando}
+        onConfirmar={confirmarApagar}
+        onCancelar={() => setPersonagemParaApagar(null)}
+      />
     </motion.div>
   );
 }
