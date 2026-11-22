@@ -205,11 +205,128 @@ select option {
   line-height: 1.35;
 }
 
+label,
 label.muted {
   display: block;
-  margin-bottom: 0.28rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.02em;
+  margin-bottom: 0.24rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--text-primary) 90%, var(--text-muted) 10%);
+  letter-spacing: 0.01em;
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05rem;
+}
+
+.input-status-ok {
+  border-color: rgba(47, 158, 68, 0.65) !important;
+}
+
+.input-status-warn {
+  border-color: rgba(212, 160, 23, 0.65) !important;
+}
+
+.password-meter {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.3rem;
+  margin-top: 0.42rem;
+}
+
+.password-meter-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background-color 220ms ease, box-shadow 220ms ease;
+}
+
+.password-meter-bar.active-weak {
+  background: #f08c00;
+}
+
+.password-meter-bar.active-medium {
+  background: #fcc419;
+}
+
+.password-meter-bar.active-strong {
+  background: #51cf66;
+  box-shadow: 0 0 8px rgba(81, 207, 102, 0.35);
+}
+
+.field-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.32rem;
+  font-size: 0.77rem;
+  line-height: 1.35;
+}
+
+.field-hint.ok {
+  color: #8ce99a;
+}
+
+.field-hint.warn {
+  color: #f3d27a;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+  padding: 0.25rem;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.auth-tab-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.38rem;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.81rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  z-index: 1;
+  transition: color 0.18s ease;
+}
+
+.auth-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.auth-tab-btn.ativo {
+  color: var(--btn-primary-text);
+  font-weight: 600;
+}
+
+.auth-tab-pill {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: var(--accent-primary);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 2px 12px var(--glow-color);
+  z-index: -1;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-icon {
+  animation: spin 0.9s linear infinite;
 }
 
 .btn {
@@ -301,10 +418,11 @@ a.btn-primary:focus-visible {
 }
 
 .card-interactive {
-  transition: background-color 300ms ease-out, border-color 300ms ease-out, box-shadow 300ms ease-out, transform 0.2s ease;
+  transition: background-color 300ms ease-out, border-color 300ms ease-out, box-shadow 300ms ease-out, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .card-interactive:hover {
+  transform: translateY(-2px);
   border-color: var(--border-accent);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 28px rgba(0, 0, 0, 0.34), 0 0 18px var(--glow-color);
 }

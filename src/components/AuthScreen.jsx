@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   BookOpenText,
+  CheckCircle,
+  CircleNotch,
   Compass,
   EnvelopeSimple,
   Eye,
@@ -10,10 +12,44 @@ import {
   Key,
   SignIn,
   UserPlus,
+  WarningCircle,
 } from '@phosphor-icons/react';
 import { formatAuthError, isSupabaseConfigured, supabase } from '../lib/supabase.js';
 import { cn } from '../lib/cn.js';
 import SeletorAtmosfera from './SeletorAtmosfera.jsx';
+
+function avaliarForcaSenha(valor) {
+  if (!valor) {
+    return { nivel: 0, classe: '', texto: '' };
+  }
+  if (valor.length < 6) {
+    const faltam = 6 - valor.length;
+    return {
+      nivel: 1,
+      classe: 'active-weak',
+      ok: false,
+      texto: `Faltam ${faltam} caractere${faltam > 1 ? 's' : ''} (mínimo de 6)`,
+    };
+  }
+  const temNumero = /\d/.test(valor);
+  const temLetra = /[a-zA-Z]/.test(valor);
+  const temEspecialOuLonga = /[^a-zA-Z0-9]/.test(valor) || valor.length >= 10;
+
+  if (valor.length >= 8 && temNumero && temLetra && temEspecialOuLonga) {
+    return {
+      nivel: 3,
+      classe: 'active-strong',
+      ok: true,
+      texto: 'Senha forte · ótima proteção para a sua conta',
+    };
+  }
+  return {
+    nivel: 2,
+    classe: 'active-medium',
+    ok: true,
+    texto: 'Senha válida · adicione números ou 8+ caracteres para deixá-la forte',
+  };
+}
 
 export default function AuthScreen() {
   const [modo, setModo] = useState('login'); // 'login' | 'cadastro' | 'esqueci' | 'magic'
@@ -23,6 +59,7 @@ export default function AuthScreen() {
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
+  const [erroCodigo, setErroCodigo] = useState(''); // 'ja_cadastrado' | 'credenciais' | ''
   const [aviso, setAviso] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -34,12 +71,18 @@ export default function AuthScreen() {
   function trocarModo(novo) {
     setModo(novo);
     setErro('');
+    setErroCodigo('');
     setAviso('');
   }
+
+  const forcaSenha = avaliarForcaSenha(senha);
+  const confirmacaoDigitada = modo === 'cadastro' && confirmarSenha.length > 0;
+  const senhasCoincidem = senha.length >= 6 && senha === confirmarSenha;
 
   async function handleSubmit(e) {
     e.preventDefault();
     setErro('');
+    setErroCodigo('');
     setAviso('');
     if (!supabase) return;
 
@@ -53,7 +96,7 @@ export default function AuthScreen() {
         if (error) throw error;
       } else if (modo === 'cadastro') {
         if (senha !== confirmarSenha) {
-          throw new Error('As duas senhas não coincidem.');
+          throw new Error('As duas senhas não coincidem. Verifique a confirmação.');
         }
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -66,7 +109,7 @@ export default function AuthScreen() {
         if (error) throw error;
         if (!data.session) {
           setAviso(
-            'Conta criada! Verifique seu e-mail para confirmar (ou tente entrar se a confirmação estiver desligada).'
+            'Conta criada! Verifique seu e-mail para confirmar (ou clique em Entrar se a confirmação já estiver liberada).'
           );
         }
       } else if (modo === 'esqueci') {
@@ -88,11 +131,26 @@ export default function AuthScreen() {
         );
       }
     } catch (err) {
-      setErro(formatAuthError(err));
+      const raw = String(err?.message || err || '');
+      if (raw.includes('User already registered') || raw.includes('already been registered')) {
+        setErroCodigo('ja_cadastrado');
+        setErro('Esse e-mail já tem conta na Mesa.');
+      } else if (raw.includes('Invalid login credentials')) {
+        setErroCodigo('credenciais');
+        setErro('E-mail ou senha incorretos.');
+      } else {
+        setErro(formatAuthError(err));
+      }
     } finally {
       setEnviando(false);
     }
   }
+
+  const abas = [
+    { id: 'login', label: 'Entrar', icone: SignIn },
+    { id: 'cadastro', label: 'Criar conta', icone: UserPlus },
+    { id: 'magic', label: 'Por e-mail', icone: EnvelopeSimple, title: 'Entrar com link no e-mail sem precisar de senha' },
+  ];
 
   return (
     <div className="container" style={{ maxWidth: 480, paddingTop: '3.25rem' }}>
@@ -127,54 +185,65 @@ export default function AuthScreen() {
           </div>
         ) : (
           <>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                gap: '0.35rem',
-              }}
-            >
-              <button
-                type="button"
-                className={cn('btn btn-sm', modo === 'login' && 'btn-primary')}
-                onClick={() => trocarModo('login')}
-              >
-                <SignIn size={14} weight="duotone" /> Entrar
-              </button>
-              <button
-                type="button"
-                className={cn('btn btn-sm', modo === 'cadastro' && 'btn-primary')}
-                onClick={() => trocarModo('cadastro')}
-              >
-                <UserPlus size={14} weight="duotone" /> Criar conta
-              </button>
-              <button
-                type="button"
-                className={cn('btn btn-sm', modo === 'magic' && 'btn-primary')}
-                onClick={() => trocarModo('magic')}
-                title="Entrar com link no e-mail sem precisar de senha"
-              >
-                <EnvelopeSimple size={14} weight="duotone" /> Por e-mail
-              </button>
+            <div className="auth-tabs" role="tablist" aria-label="Modo de acesso">
+              {abas.map((aba) => {
+                const Icone = aba.icone;
+                const ativo = modo === aba.id || (modo === 'esqueci' && aba.id === 'login');
+                return (
+                  <button
+                    key={aba.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={ativo}
+                    className={cn('auth-tab-btn', ativo && 'ativo')}
+                    onClick={() => trocarModo(aba.id)}
+                    title={aba.title}
+                  >
+                    {ativo && (
+                      <motion.span
+                        layoutId="auth-mode-pill"
+                        className="auth-tab-pill"
+                        transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                      />
+                    )}
+                    <Icone size={14} weight="duotone" />
+                    <span>{aba.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            <form onSubmit={handleSubmit} className="stack">
-              {modo === 'cadastro' && (
-                <div>
-                  <label className="muted">Seu nome (como aparece na mesa)</label>
-                  <input
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
-                    placeholder="Ex: Jean"
-                    required
-                  />
-                </div>
-              )}
+            <form onSubmit={handleSubmit} className="form-stack">
+              <AnimatePresence initial={false}>
+                {modo === 'cadastro' && (
+                  <motion.div
+                    key="campo-nome"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <label htmlFor="auth-nome">Seu nome (como aparece na mesa)</label>
+                    <input
+                      id="auth-nome"
+                      name="name"
+                      autoComplete="name"
+                      value={nome}
+                      onChange={(e) => setNome(e.target.value)}
+                      placeholder="Ex: Jean"
+                      required
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div>
-                <label className="muted">E-mail</label>
+                <label htmlFor="auth-email">E-mail</label>
                 <input
+                  id="auth-email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="voce@exemplo.com"
@@ -184,13 +253,21 @@ export default function AuthScreen() {
 
               {(modo === 'login' || modo === 'cadastro') && (
                 <div>
-                  <label className="muted">Senha</label>
+                  <label htmlFor="auth-senha">Senha</label>
                   <div className="input-with-icon has-right">
                     <input
+                      id="auth-senha"
+                      name="password"
                       type={mostrarSenha ? 'text' : 'password'}
+                      autoComplete={modo === 'cadastro' ? 'new-password' : 'current-password'}
+                      className={cn(
+                        modo === 'cadastro' &&
+                          senha.length > 0 &&
+                          (forcaSenha.ok ? 'input-status-ok' : 'input-status-warn')
+                      )}
                       value={senha}
                       onChange={(e) => setSenha(e.target.value)}
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder="Mínimo de 6 caracteres"
                       required
                       minLength={6}
                     />
@@ -199,6 +276,7 @@ export default function AuthScreen() {
                       className="input-icon-right"
                       onClick={() => setMostrarSenha((v) => !v)}
                       title={mostrarSenha ? 'Ocultar senha' : 'Ver senha'}
+                      aria-label={mostrarSenha ? 'Ocultar senha' : 'Ver senha'}
                     >
                       {mostrarSenha ? (
                         <EyeSlash size={16} weight="light" />
@@ -207,56 +285,197 @@ export default function AuthScreen() {
                       )}
                     </button>
                   </div>
+
+                  {modo === 'cadastro' && senha.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.16 }}
+                    >
+                      <div className="password-meter" aria-hidden="true">
+                        {[1, 2, 3].map((idx) => (
+                          <span
+                            key={idx}
+                            className={cn(
+                              'password-meter-bar',
+                              forcaSenha.nivel >= idx && forcaSenha.classe
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <div className={cn('field-hint', forcaSenha.ok ? 'ok' : 'warn')}>
+                        {forcaSenha.ok ? (
+                          <CheckCircle size={14} weight="fill" />
+                        ) : (
+                          <WarningCircle size={14} weight="fill" />
+                        )}
+                        <span>{forcaSenha.texto}</span>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
               )}
 
               {modo === 'cadastro' && (
                 <div>
-                  <label className="muted">Confirmar senha</label>
+                  <label htmlFor="auth-confirmar-senha">Confirmar senha</label>
                   <input
+                    id="auth-confirmar-senha"
+                    name="confirmPassword"
                     type={mostrarSenha ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    className={cn(
+                      confirmacaoDigitada &&
+                        (senhasCoincidem ? 'input-status-ok' : 'input-status-warn')
+                    )}
                     value={confirmarSenha}
                     onChange={(e) => setConfirmarSenha(e.target.value)}
-                    placeholder="Digite a senha novamente"
+                    placeholder="Repita a senha escolhida"
                     required
                     minLength={6}
                   />
+                  {confirmacaoDigitada && (
+                    <div className={cn('field-hint', senhasCoincidem ? 'ok' : 'warn')}>
+                      {senhasCoincidem ? (
+                        <>
+                          <CheckCircle size={14} weight="fill" />
+                          <span>As senhas coincidem</span>
+                        </>
+                      ) : (
+                        <>
+                          <WarningCircle size={14} weight="fill" />
+                          <span>As duas senhas ainda não coincidem</span>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
               {erro && (
-                <div className="badge badge-accent" style={{ borderRadius: 8, padding: '0.5rem 0.75rem' }}>
-                  {erro}
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="badge badge-accent"
+                  style={{
+                    borderRadius: 8,
+                    padding: '0.6rem 0.78rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: '0.4rem',
+                    whiteSpace: 'normal',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  <span>{erro}</span>
+                  {erroCodigo === 'ja_cadastrado' && (
+                    <div className="row" style={{ gap: '0.4rem' }}>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={() => trocarModo('login')}
+                      >
+                        Entrar com esse e-mail
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => trocarModo('esqueci')}
+                      >
+                        Recuperar senha
+                      </button>
+                    </div>
+                  )}
+                  {erroCodigo === 'credenciais' && (
+                    <div className="row" style={{ gap: '0.4rem' }}>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => trocarModo('esqueci')}
+                      >
+                        Esqueci minha senha
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => trocarModo('magic')}
+                      >
+                        Entrar com link no e-mail
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
               )}
+
               {aviso && (
-                <div className="badge badge-success" style={{ borderRadius: 8, padding: '0.5rem 0.75rem' }}>
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="badge badge-success"
+                  style={{
+                    borderRadius: 8,
+                    padding: '0.6rem 0.78rem',
+                    whiteSpace: 'normal',
+                    lineHeight: 1.4,
+                  }}
+                >
                   {aviso}
-                </div>
+                </motion.div>
               )}
 
               <button type="submit" className="btn btn-primary" disabled={enviando}>
-                {enviando
-                  ? 'Aguarde...'
-                  : modo === 'login'
-                  ? 'Entrar na Mesa'
-                  : modo === 'cadastro'
-                  ? 'Criar conta'
-                  : modo === 'esqueci'
-                  ? 'Enviar link de recuperação'
-                  : 'Enviar link de acesso no e-mail'}
+                {enviando && <CircleNotch size={16} weight="bold" className="spin-icon" />}
+                <span>
+                  {enviando
+                    ? modo === 'login'
+                      ? 'Entrando na Mesa...'
+                      : modo === 'cadastro'
+                      ? 'Criando sua conta...'
+                      : 'Enviando link para o e-mail...'
+                    : modo === 'login'
+                    ? 'Entrar na Mesa'
+                    : modo === 'cadastro'
+                    ? 'Criar minha conta'
+                    : modo === 'esqueci'
+                    ? 'Enviar link de recuperação'
+                    : 'Enviar link de acesso no e-mail'}
+                </span>
               </button>
 
               {modo === 'login' && (
-                <button
-                  type="button"
-                  className="btn btn-sm btn-ghost"
-                  onClick={() => trocarModo('esqueci')}
-                  style={{ alignSelf: 'flex-start', paddingLeft: 0 }}
-                >
-                  <Key size={14} weight="light" /> Esqueci minha senha
-                </button>
+                <div className="space-between" style={{ fontSize: '0.81rem' }}>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => trocarModo('esqueci')}
+                    style={{ paddingLeft: 0 }}
+                  >
+                    <Key size={14} weight="light" /> Esqueci minha senha
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => trocarModo('cadastro')}
+                    style={{ paddingRight: 0 }}
+                  >
+                    Não tem conta? <strong style={{ color: 'var(--accent-primary)' }}>Criar agora</strong>
+                  </button>
+                </div>
               )}
+
+              {modo === 'cadastro' && (
+                <div className="row" style={{ justifyContent: 'center', fontSize: '0.81rem' }}>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => trocarModo('login')}
+                  >
+                    Já tem conta? <strong style={{ color: 'var(--accent-primary)' }}>Entrar na Mesa</strong>
+                  </button>
+                </div>
+              )}
+
               {modo === 'esqueci' && (
                 <button
                   type="button"
