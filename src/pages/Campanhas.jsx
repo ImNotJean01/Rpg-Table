@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   BookOpenText,
   CheckCircle,
@@ -176,39 +176,52 @@ export default function Campanhas({ user }) {
             placeholder="Nome da campanha (ex: O Caso da Mansão)"
             required
           />
-          <div>
-            <label className="muted">Sistema da campanha</label>
-            <div className="sistema-picker" role="radiogroup" aria-label="Sistema da campanha">
-              {Object.values(SISTEMAS).map((s) => {
-                const Icon = ICONE_SISTEMA[s.id] || Compass;
-                const ativo = sistema === s.id;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={ativo}
-                    className={cn('sistema-option', ativo && 'selecionado')}
-                    onClick={() => {
-                      setSistema(s.id);
-                      syncFromSystem(s.tema);
-                    }}
-                  >
-                    <div className="sistema-option-head">
-                      <span className="sistema-option-titulo">
-                        <Icon size={15} weight={ativo ? 'duotone' : 'light'} />
-                        {s.nome}
-                      </span>
-                      {ativo && (
-                        <CheckCircle size={15} weight="duotone" color="var(--accent-primary)" />
-                      )}
-                    </div>
-                    <span className="sistema-option-desc">{s.descricao}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <AnimatePresence initial={false}>
+            {nome.trim().length > 0 && (
+              <motion.div
+                key="sistema-picker"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div style={{ paddingTop: '0.15rem' }}>
+                  <label className="muted">Escolha o sistema da campanha</label>
+                  <div className="sistema-picker" role="radiogroup" aria-label="Sistema da campanha">
+                    {Object.values(SISTEMAS).map((s) => {
+                      const Icon = ICONE_SISTEMA[s.id] || Compass;
+                      const ativo = sistema === s.id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={ativo}
+                          className={cn('sistema-option', ativo && 'selecionado')}
+                          onClick={() => {
+                            setSistema(s.id);
+                            syncFromSystem(s.tema);
+                          }}
+                        >
+                          <div className="sistema-option-head">
+                            <span className="sistema-option-titulo">
+                              <Icon size={15} weight={ativo ? 'duotone' : 'light'} />
+                              {s.nome}
+                            </span>
+                            {ativo && (
+                              <CheckCircle size={15} weight="duotone" color="var(--accent-primary)" />
+                            )}
+                          </div>
+                          <span className="sistema-option-desc">{s.descricao}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <button type="submit" className="btn btn-primary" disabled={criando}>
             <Plus size={16} weight="duotone" /> {criando ? 'Criando...' : 'Criar campanha'}
           </button>
