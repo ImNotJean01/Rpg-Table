@@ -54,7 +54,8 @@ export default function Guia({ sistemaAtual = null }) {
           >
             <ArrowLeft size={14} weight="light" /> Voltar
           </Link>
-          <h1 style={{ marginBottom: '0.2rem' }}>Guias dos Sistemas</h1>
+          <span className="section-kicker" style={{ display: 'block' }}>Compêndio de Regras</span>
+          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Guias dos Sistemas</h1>
           <p className="muted" style={{ margin: 0 }}>
             Resumo rápido em português para aprender como cada livro funciona antes da sessão.
           </p>

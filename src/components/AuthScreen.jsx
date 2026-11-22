@@ -127,7 +127,13 @@ export default function AuthScreen() {
           </div>
         ) : (
           <>
-            <div className="row" style={{ gap: '0.35rem' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gap: '0.35rem',
+              }}
+            >
               <button
                 type="button"
                 className={cn('btn btn-sm', modo === 'login' && 'btn-primary')}
@@ -148,7 +154,7 @@ export default function AuthScreen() {
                 onClick={() => trocarModo('magic')}
                 title="Entrar com link no e-mail sem precisar de senha"
               >
-                <EnvelopeSimple size={14} weight="duotone" /> Link no e-mail
+                <EnvelopeSimple size={14} weight="duotone" /> Por e-mail
               </button>
             </div>
 
@@ -179,7 +185,7 @@ export default function AuthScreen() {
               {(modo === 'login' || modo === 'cadastro') && (
                 <div>
                   <label className="muted">Senha</label>
-                  <div className="row" style={{ gap: '0.35rem' }}>
+                  <div className="input-with-icon has-right">
                     <input
                       type={mostrarSenha ? 'text' : 'password'}
                       value={senha}
@@ -187,18 +193,17 @@ export default function AuthScreen() {
                       placeholder="Mínimo 6 caracteres"
                       required
                       minLength={6}
-                      style={{ flex: 1 }}
                     />
                     <button
                       type="button"
-                      className="btn btn-sm"
+                      className="input-icon-right"
                       onClick={() => setMostrarSenha((v) => !v)}
                       title={mostrarSenha ? 'Ocultar senha' : 'Ver senha'}
                     >
                       {mostrarSenha ? (
-                        <EyeSlash size={15} weight="light" />
+                        <EyeSlash size={16} weight="light" />
                       ) : (
-                        <Eye size={15} weight="light" />
+                        <Eye size={16} weight="light" />
                       )}
                     </button>
                   </div>

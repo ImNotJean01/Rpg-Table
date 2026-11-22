@@ -84,15 +84,14 @@ export default function Biblioteca({ campanhaId = null, sistema = null, isMestre
           </p>
         </div>
 
-        <div className="row">
+        <div className="row" style={{ flex: '1 1 240px', justifyContent: 'flex-end' }}>
           {!dentroDeCampanha && <SeletorAtmosfera />}
-          <div className="row" style={{ minWidth: 230 }}>
-            <MagnifyingGlass size={16} weight="light" className="muted" />
+          <div className="input-with-icon has-left" style={{ maxWidth: 260, flex: '1 1 200px' }}>
+            <MagnifyingGlass size={16} weight="light" className="input-icon-left" />
             <input
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar link..."
-              style={{ width: 210 }}
             />
           </div>
         </div>
