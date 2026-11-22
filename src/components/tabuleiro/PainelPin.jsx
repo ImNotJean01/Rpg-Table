@@ -14,6 +14,7 @@ export default function PainelPin({
   onFechar,
   onSalvar,
   onApagar,
+  onAbrirFicha,
 }) {
   const [nome, setNome] = useState(pin.nome || '');
   const [icone, setIcone] = useState(pin.icone || 'guerreiro');
@@ -81,13 +82,27 @@ export default function PainelPin({
           <div className="card" style={{ background: 'var(--bg)', padding: '0.65rem' }}>
             <div className="space-between">
               <strong>Ficha vinculada: {vinculado.nome}</strong>
-              {vinculado.condicoes?.length > 0 && (
-                <div className="row" style={{ gap: '0.25rem' }}>
-                  {vinculado.condicoes.map((c) => (
-                    <span key={c} className="badge badge-warn">{c}</span>
-                  ))}
-                </div>
-              )}
+              <div className="row" style={{ gap: '0.35rem' }}>
+                {vinculado.condicoes?.length > 0 && (
+                  <div className="row" style={{ gap: '0.25rem' }}>
+                    {vinculado.condicoes.map((c) => (
+                      <span key={c} className="badge badge-warn">{c}</span>
+                    ))}
+                  </div>
+                )}
+                {onAbrirFicha && (personagemId || pin.personagem_id) && (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-primary"
+                    onClick={() => {
+                      onAbrirFicha(personagemId || pin.personagem_id);
+                      onFechar();
+                    }}
+                  >
+                    Abrir ficha
+                  </button>
+                )}
+              </div>
             </div>
             {vinculado.dados?.recursos?.pv && (
               <div className="muted" style={{ marginTop: '0.25rem' }}>

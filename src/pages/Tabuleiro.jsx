@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Eye, GridFour, Image, MapPin, Plus } from '@phosphor-icons/react';
+import { Eye, GridFour, Image, MapPin, Plus, X } from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
+import { rolarNoServidor } from '../lib/dados.js';
 import PalcoCompleto from '../components/tabuleiro/PalcoCompleto.jsx';
 import Ferramentas from '../components/tabuleiro/Ferramentas.jsx';
 import AssistenteMapa from '../components/tabuleiro/AssistenteMapa.jsx';
@@ -9,6 +10,7 @@ import PainelPin from '../components/tabuleiro/PainelPin.jsx';
 import Iniciativa from '../components/mesa/Iniciativa.jsx';
 import RoladorDados from '../components/mesa/RoladorDados.jsx';
 import UploadImagem from '../components/UploadImagem.jsx';
+import FichaDinamica from '../components/ficha/FichaDinamica.jsx';
 import { aplicarCarimbo } from '../components/tabuleiro/assistente/carimbos.js';
 import { criarHistorico } from '../components/tabuleiro/historico.js';
 
@@ -23,7 +25,7 @@ export default function Tabuleiro({
     filtroValor: campanhaId,
     orderBy: 'ordem',
   });
-  const { rows: personagens } = useRealtimeTable('personagens', {
+  const { rows: personagens, setRows: setPersonagens } = useRealtimeTable('personagens', {
     filtroValor: campanhaId,
     orderBy: 'criado_em',
   });
@@ -46,6 +48,7 @@ export default function Tabuleiro({
 
   const [cenaSelecionadaId, setCenaSelecionadaId] = useState(null);
   const [pinEditando, setPinEditando] = useState(null);
+  const [fichaAbertaId, setFichaAbertaId] = useState(null);
   const [configFundoAberto, setConfigFundoAberto] = useState(false);
 
   // Ferramentas Fase 2
@@ -531,6 +534,7 @@ export default function Tabuleiro({
             personagens={personagens}
             criaturas={criaturas}
             isMestre={isMestre}
+            onAbrirFicha={setFichaAbertaId}
           />
           <RoladorDados
             campanhaId={campanhaId}
@@ -550,7 +554,61 @@ export default function Tabuleiro({
           onFechar={() => setPinEditando(null)}
           onSalvar={salvarPin}
           onApagar={apagarPin}
+          onAbrirFicha={setFichaAbertaId}
         />
+      )}
+
+      {fichaAbertaId && personagens.find((p) => p.id === fichaAbertaId) && (
+        <div className="modal-backdrop" onClick={() => setFichaAbertaId(null)}>
+          <div
+            className="modal-box stack"
+            style={{ maxWidth: 880 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="space-between">
+              <span className="section-kicker">Ficha do Personagem (direto do Tabuleiro)</span>
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                onClick={() => setFichaAbertaId(null)}
+              >
+                <X size={16} weight="light" /> Fechar
+              </button>
+            </div>
+            <FichaDinamica
+              personagem={personagens.find((p) => p.id === fichaAbertaId)}
+              sistema={sistema}
+              campanhaId={campanhaId}
+              isMestre={isMestre}
+              podeEditar={
+                isMestre ||
+                personagens.find((p) => p.id === fichaAbertaId)?.dono_id === userId
+              }
+              onSalvar={async (payload) => {
+                if (!supabase) return;
+                const { data, error } = await supabase
+                  .from('personagens')
+                  .update(payload)
+                  .eq('id', fichaAbertaId)
+                  .select()
+                  .single();
+                if (!error && data) {
+                  setPersonagens((prev) =>
+                    prev.map((p) => (p.id === data.id ? data : p))
+                  );
+                }
+              }}
+              onRolar={async (rotulo, params) => {
+                if (!supabase) return;
+                await rolarNoServidor(supabase, {
+                  campanhaId,
+                  ...params,
+                  rotulo,
+                });
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

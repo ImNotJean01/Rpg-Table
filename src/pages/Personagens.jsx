@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { DiceFive, Plus, Trash, X } from '@phosphor-icons/react';
+import {
+  Crown,
+  DiceFive,
+  LockKey,
+  LockKeyOpen,
+  Plus,
+  Trash,
+  X,
+} from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
 import { rolarNoServidor } from '../lib/dados.js';
+import { cn } from '../lib/cn.js';
 import FichaDinamica from '../components/ficha/FichaDinamica.jsx';
 import ConfirmModal from '../components/ConfirmModal.jsx';
 
@@ -86,6 +95,41 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
     }
   }
 
+  async function ajustarRecursoRapido(e, p, rec, delta) {
+    e.stopPropagation();
+    if (!supabase) return;
+    const atualObj = p.dados?.recursos?.[rec.id] || {
+      atual: rec.padrao ?? 10,
+      max: rec.padrao ?? 10,
+    };
+    const proxAtual = Math.max(0, (Number(atualObj.atual) || 0) + delta);
+    const proxDados = {
+      ...(p.dados || {}),
+      recursos: {
+        ...(p.dados?.recursos || {}),
+        [rec.id]: { ...atualObj, atual: proxAtual },
+      },
+    };
+    setPersonagens((prev) =>
+      prev.map((x) => (x.id === p.id ? { ...x, dados: proxDados } : x))
+    );
+    await supabase.from('personagens').update({ dados: proxDados }).eq('id', p.id);
+  }
+
+  async function alternarControleMestreRapido(e, p) {
+    e.stopPropagation();
+    if (!supabase || !isMestre) return;
+    const controlado = Boolean(p.dados?.controlado_pelo_mestre);
+    const proxDados = {
+      ...(p.dados || {}),
+      controlado_pelo_mestre: !controlado,
+    };
+    setPersonagens((prev) =>
+      prev.map((x) => (x.id === p.id ? { ...x, dados: proxDados } : x))
+    );
+    await supabase.from('personagens').update({ dados: proxDados }).eq('id', p.id);
+  }
+
   async function confirmarApagar() {
     if (!supabase || !personagemParaApagar) return;
     setApagando(true);
@@ -126,7 +170,9 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
           <span className="section-kicker">Fichas &amp; Agentes</span>
           <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Personagens da Party</h1>
           <p className="muted" style={{ margin: 0 }}>
-            Clique em um card para abrir a ficha completa e rolar testes.
+            {isMestre
+              ? 'Como mestre, você pode editar qualquer ficha, adicionar estados (ex: Embriagado) ou assumir o controle exclusivo.'
+              : 'Clique em um card para abrir a ficha completa e rolar testes.'}
           </p>
         </div>
 
@@ -148,14 +194,19 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
       ) : (
         <div className="grid-cards">
           {personagens.map((p) => {
-            const podeEditar = isMestre || p.dono_id === userId;
+            const controlado = Boolean(p.dados?.controlado_pelo_mestre);
+            const podeEditar = isMestre || (p.dono_id === userId && !controlado);
             return (
               <motion.div
                 key={p.id}
                 whileHover={{ y: -2 }}
                 transition={{ duration: 0.16 }}
                 className="card card-interactive stack"
-                style={{ cursor: 'pointer', gap: '0.7rem' }}
+                style={{
+                  cursor: 'pointer',
+                  gap: '0.7rem',
+                  borderColor: controlado ? 'var(--border-accent)' : undefined,
+                }}
                 onClick={() => {
                   setCriandoNovo(false);
                   setSelecionadoId(p.id);
@@ -200,19 +251,46 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
                     </div>
                   </div>
 
-                  {podeEditar && (
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPersonagemParaApagar(p);
-                      }}
-                    >
-                      <Trash size={14} weight="light" />
-                    </button>
-                  )}
+                  <div className="row" style={{ gap: '0.25rem' }}>
+                    {isMestre && (
+                      <button
+                        type="button"
+                        className={cn('btn btn-sm', controlado && 'btn-primary')}
+                        onClick={(e) => alternarControleMestreRapido(e, p)}
+                        title={
+                          controlado
+                            ? 'Sob seu controle (clique para devolver ao player)'
+                            : 'Assumir controle exclusivo da ficha'
+                        }
+                      >
+                        {controlado ? (
+                          <LockKeyOpen size={14} weight="duotone" />
+                        ) : (
+                          <LockKey size={14} weight="light" />
+                        )}
+                      </button>
+                    )}
+                    {podeEditar && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPersonagemParaApagar(p);
+                        }}
+                        title="Apagar ficha"
+                      >
+                        <Trash size={14} weight="light" />
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {controlado && (
+                  <div className="badge badge-accent" style={{ alignSelf: 'flex-start' }}>
+                    <Crown size={12} weight="duotone" /> Sob controle do Mestre
+                  </div>
+                )}
 
                 {(sistema.recursos || []).map((rec) => {
                   const val = p.dados?.recursos?.[rec.id] || {
@@ -224,7 +302,31 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
                     <div key={rec.id} className="stack" style={{ gap: '0.22rem' }}>
                       <div className="space-between" style={{ fontSize: '0.78rem' }}>
                         <span className="muted">{rec.nome}</span>
-                        <span className="mono">{val.atual}/{val.max}</span>
+                        <div className="row" style={{ gap: '0.25rem' }}>
+                          {isMestre && (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-ghost mono"
+                              style={{ padding: '0 0.35rem', fontSize: '0.75rem' }}
+                              onClick={(e) => ajustarRecursoRapido(e, p, rec, -1)}
+                              title="−1"
+                            >
+                              −
+                            </button>
+                          )}
+                          <span className="mono">{val.atual}/{val.max}</span>
+                          {isMestre && (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-ghost mono"
+                              style={{ padding: '0 0.35rem', fontSize: '0.75rem' }}
+                              onClick={(e) => ajustarRecursoRapido(e, p, rec, +1)}
+                              title="+1"
+                            >
+                              +
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <div className="recurso-bar" style={{ height: 7 }}>
                         <div className="recurso-fill" style={{ width: `${pct}%`, background: rec.cor }} />

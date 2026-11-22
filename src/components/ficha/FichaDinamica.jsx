@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { DiceFive, Plus, Trash } from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
+import { Crown, DiceFive, LockKey, LockKeyOpen, Plus, Trash } from '@phosphor-icons/react';
 import Condicoes from './Condicoes.jsx';
 import UploadImagem from '../UploadImagem.jsx';
+import { cn } from '../../lib/cn.js';
 
 export default function FichaDinamica({
   personagem,
@@ -24,9 +25,57 @@ export default function FichaDinamica({
     pericias: {},
     listas: {},
     anotacoes: '',
+    controlado_pelo_mestre: false,
     ...(personagem.dados || {}),
   }));
   const [salvando, setSalvando] = useState(false);
+
+  // Sincroniza em tempo real quando o mestre (ou jogador) altera a ficha no banco
+  useEffect(() => {
+    setNome(personagem.nome || '');
+    setRetratoUrl(personagem.retrato_url || '');
+    setDonoId(personagem.dono_id || '');
+    setCondicoes(personagem.condicoes || []);
+    setDados({
+      atributos: {},
+      recursos: {},
+      campos: {},
+      pericias: {},
+      listas: {},
+      anotacoes: '',
+      controlado_pelo_mestre: false,
+      ...(personagem.dados || {}),
+    });
+  }, [personagem]);
+
+  const controladoPeloMestre = Boolean(dados.controlado_pelo_mestre);
+  const podeEditarEfetivo = isMestre || (podeEditar && !controladoPeloMestre);
+
+  function montarPayload(override = {}) {
+    return {
+      nome: (override.nome ?? nome).trim() || 'Sem nome',
+      retrato_url: (override.retrato_url ?? retratoUrl).trim() || null,
+      dono_id: isMestre ? (override.dono_id ?? donoId) || null : personagem.dono_id,
+      condicoes: override.condicoes ?? condicoes,
+      dados: override.dados ?? dados,
+    };
+  }
+
+  async function alternarControleMestre() {
+    if (!isMestre) return;
+    const proxDados = { ...dados, controlado_pelo_mestre: !controladoPeloMestre };
+    setDados(proxDados);
+    if (personagem.id && personagem.id !== 'novo') {
+      await onSalvar(montarPayload({ dados: proxDados }));
+    }
+  }
+
+  async function handleChangeCondicoes(proxCondicoes) {
+    setCondicoes(proxCondicoes);
+    if (podeEditarEfetivo && personagem.id && personagem.id !== 'novo') {
+      await onSalvar(montarPayload({ condicoes: proxCondicoes }));
+    }
+  }
 
   function setAtributo(id, val) {
     setDados((d) => ({
@@ -102,16 +151,10 @@ export default function FichaDinamica({
 
   async function salvarTudo(e) {
     e?.preventDefault();
-    if (!podeEditar) return;
+    if (!podeEditarEfetivo) return;
     setSalvando(true);
     try {
-      await onSalvar({
-        nome: nome.trim() || 'Sem nome',
-        retrato_url: retratoUrl.trim() || null,
-        dono_id: isMestre ? donoId || null : personagem.dono_id,
-        condicoes,
-        dados,
-      });
+      await onSalvar(montarPayload());
     } finally {
       setSalvando(false);
     }
@@ -119,6 +162,48 @@ export default function FichaDinamica({
 
   return (
     <form onSubmit={salvarTudo} className="stack">
+      {/* Barra de controle direto do Mestre */}
+      {(isMestre || controladoPeloMestre) && (
+        <div
+          className="space-between"
+          style={{
+            padding: '0.6rem 0.85rem',
+            borderRadius: 8,
+            background: controladoPeloMestre ? 'var(--accent-soft)' : 'var(--bg-base)',
+            border: `1px solid ${controladoPeloMestre ? 'var(--border-accent)' : 'var(--border-subtle)'}`,
+          }}
+        >
+          <div className="row" style={{ gap: '0.45rem' }}>
+            <Crown size={16} weight="duotone" color="var(--accent-primary)" />
+            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+              {controladoPeloMestre
+                ? isMestre
+                  ? 'Você está no controle exclusivo desta ficha (edição travada para o jogador).'
+                  : 'Seu personagem está sob controle do Mestre no momento (acompanhe ao vivo).'
+                : 'Mestre: você pode editar esta ficha livremente ou assumir o controle exclusivo.'}
+            </span>
+          </div>
+
+          {isMestre && (
+            <button
+              type="button"
+              className={cn('btn btn-sm', controladoPeloMestre && 'btn-primary')}
+              onClick={alternarControleMestre}
+            >
+              {controladoPeloMestre ? (
+                <>
+                  <LockKeyOpen size={14} weight="duotone" /> Devolver controle ao player
+                </>
+              ) : (
+                <>
+                  <LockKey size={14} weight="duotone" /> Assumir controle do personagem
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="space-between">
         <div className="row" style={{ flex: 1 }}>
           {retratoUrl && (
@@ -138,21 +223,21 @@ export default function FichaDinamica({
             <label className="muted">Nome do personagem</label>
             <input
               value={nome}
-              disabled={!podeEditar}
+              disabled={!podeEditarEfetivo}
               onChange={(e) => setNome(e.target.value)}
               required
             />
           </div>
         </div>
 
-        {podeEditar && (
+        {podeEditarEfetivo && (
           <button type="submit" className="btn btn-primary" disabled={salvando}>
             {salvando ? 'Salvando...' : 'Salvar ficha'}
           </button>
         )}
       </div>
 
-      {podeEditar && (
+      {podeEditarEfetivo && (
         <UploadImagem
           pasta={`${campanhaId}/retratos`}
           valor={retratoUrl}
@@ -178,8 +263,8 @@ export default function FichaDinamica({
       <Condicoes
         opcoes={sistema.condicoes || []}
         ativas={condicoes}
-        podeEditar={podeEditar}
-        onChange={setCondicoes}
+        podeEditar={podeEditarEfetivo}
+        onChange={handleChangeCondicoes}
       />
 
       {/* Recursos (PV, PE, SAN...) */}
@@ -201,7 +286,7 @@ export default function FichaDinamica({
               <div className="recurso-bar">
                 <div className="recurso-fill" style={{ width: `${pct}%`, background: rec.cor }} />
               </div>
-              {podeEditar && (
+              {podeEditarEfetivo && (
                 <div className="row" style={{ gap: '0.35rem' }}>
                   <button
                     type="button"
@@ -263,7 +348,7 @@ export default function FichaDinamica({
                   className="mono"
                   type="number"
                   value={val}
-                  disabled={!podeEditar}
+                  disabled={!podeEditarEfetivo}
                   onChange={(e) => setAtributo(atr.id, e.target.value)}
                   style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.15rem' }}
                 />
@@ -295,7 +380,7 @@ export default function FichaDinamica({
               {c.tipo === 'select' ? (
                 <select
                   value={val}
-                  disabled={!podeEditar}
+                  disabled={!podeEditarEfetivo}
                   onChange={(e) => setCampo(c.id, e.target.value)}
                 >
                   <option value="">—</option>
@@ -310,7 +395,7 @@ export default function FichaDinamica({
                   className={c.tipo === 'numero' ? 'mono' : ''}
                   type={c.tipo === 'numero' ? 'number' : 'text'}
                   value={val}
-                  disabled={!podeEditar}
+                  disabled={!podeEditarEfetivo}
                   onChange={(e) => setCampo(c.id, e.target.value)}
                 />
               )}
@@ -352,7 +437,7 @@ export default function FichaDinamica({
                   <div className="row" style={{ gap: '0.25rem' }}>
                     <select
                       value={nivelId}
-                      disabled={!podeEditar}
+                      disabled={!podeEditarEfetivo}
                       onChange={(e) => setPericia(per.id, e.target.value)}
                       style={{ width: 'auto', padding: '0.2rem 0.35rem', fontSize: '0.78rem' }}
                     >
@@ -389,7 +474,7 @@ export default function FichaDinamica({
           <div key={lista.id} className="card stack">
             <div className="space-between">
               <strong>{lista.nome}</strong>
-              {podeEditar && (
+              {podeEditarEfetivo && (
                 <button
                   type="button"
                   className="btn btn-sm"
@@ -419,7 +504,7 @@ export default function FichaDinamica({
                         <select
                           key={campo.id}
                           value={item[campo.id] || ''}
-                          disabled={!podeEditar}
+                          disabled={!podeEditarEfetivo}
                           onChange={(e) =>
                             updateItemLista(lista.id, idx, campo.id, e.target.value)
                           }
@@ -436,7 +521,7 @@ export default function FichaDinamica({
                         <input
                           key={campo.id}
                           value={item[campo.id] || ''}
-                          disabled={!podeEditar}
+                          disabled={!podeEditarEfetivo}
                           placeholder={campo.nome}
                           onChange={(e) =>
                             updateItemLista(lista.id, idx, campo.id, e.target.value)
@@ -445,7 +530,7 @@ export default function FichaDinamica({
                         />
                       )
                     )}
-                    {podeEditar && (
+                    {podeEditarEfetivo && (
                       <button
                         type="button"
                         className="btn btn-sm btn-danger"
@@ -468,7 +553,7 @@ export default function FichaDinamica({
         <textarea
           rows={4}
           value={dados.anotacoes || ''}
-          disabled={!podeEditar}
+          disabled={!podeEditarEfetivo}
           onChange={(e) => setDados((d) => ({ ...d, anotacoes: e.target.value }))}
           placeholder="História pessoal, contatos, objetivos..."
         />

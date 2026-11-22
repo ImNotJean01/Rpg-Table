@@ -472,6 +472,7 @@ export default function PalcoCompleto({
     if (isMestre) return true;
     if (!pin.personagem_id) return false;
     const p = personagens.find((x) => x.id === pin.personagem_id);
+    if (p?.dados?.controlado_pelo_mestre) return false;
     return p?.dono_id === userId;
   }
 

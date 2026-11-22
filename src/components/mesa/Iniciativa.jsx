@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   ArrowCounterClockwise,
   CaretRight,
+  IdentificationCard,
   Plus,
   Trash,
 } from '@phosphor-icons/react';
@@ -14,6 +15,7 @@ export default function Iniciativa({
   personagens = [],
   criaturas = [],
   isMestre,
+  onAbrirFicha,
 }) {
   const [nome, setNome] = useState('');
   const [valor, setValor] = useState(10);
@@ -140,7 +142,18 @@ export default function Iniciativa({
                   )}
                 </div>
 
-                <div className="row" style={{ gap: '0.35rem' }}>
+                <div className="row" style={{ gap: '0.3rem' }}>
+                  {item.personagem_id && onAbrirFicha && (
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => onAbrirFicha(item.personagem_id)}
+                      title="Abrir ficha do personagem"
+                      style={{ padding: '0.18rem' }}
+                    >
+                      <IdentificationCard size={15} weight="duotone" />
+                    </button>
+                  )}
                   <span className="badge mono">{item.valor}</span>
                   {isMestre && (
                     <button
