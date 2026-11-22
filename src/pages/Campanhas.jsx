@@ -3,12 +3,23 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
   BookOpenText,
+  CheckCircle,
   Compass,
+  Fingerprint,
+  Flame,
   Key,
   Plus,
   Shield,
+  Sword,
   Trash,
 } from '@phosphor-icons/react';
+
+const ICONE_SISTEMA = {
+  'ordem-paranormal': Fingerprint,
+  dnd5e: Sword,
+  tormenta20: Flame,
+  generico: Compass,
+};
 import { supabase } from '../lib/supabase.js';
 import { SISTEMAS } from '../sistemas/index.js';
 import { cn } from '../lib/cn.js';
@@ -163,13 +174,36 @@ export default function Campanhas({ user }) {
             placeholder="Nome da campanha (ex: O Caso da Mansão)"
             required
           />
-          <select value={sistema} onChange={(e) => setSistema(e.target.value)}>
-            {Object.values(SISTEMAS).map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.nome} — {s.descricao}
-              </option>
-            ))}
-          </select>
+          <div>
+            <label className="muted">Sistema da campanha</label>
+            <div className="sistema-picker" role="radiogroup" aria-label="Sistema da campanha">
+              {Object.values(SISTEMAS).map((s) => {
+                const Icon = ICONE_SISTEMA[s.id] || Compass;
+                const ativo = sistema === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={ativo}
+                    className={cn('sistema-option', ativo && 'selecionado')}
+                    onClick={() => setSistema(s.id)}
+                  >
+                    <div className="sistema-option-head">
+                      <span className="sistema-option-titulo">
+                        <Icon size={15} weight={ativo ? 'duotone' : 'light'} />
+                        {s.nome}
+                      </span>
+                      {ativo && (
+                        <CheckCircle size={15} weight="duotone" color="var(--accent-primary)" />
+                      )}
+                    </div>
+                    <span className="sistema-option-desc">{s.descricao}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <button type="submit" className="btn btn-primary" disabled={criando}>
             <Plus size={16} weight="duotone" /> {criando ? 'Criando...' : 'Criar campanha'}
           </button>

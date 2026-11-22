@@ -28,6 +28,7 @@ body,
   min-height: 100vh;
   background-color: var(--bg-base);
   color: var(--text-main);
+  color-scheme: dark;
   font-family: var(--font-sans);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -130,6 +131,77 @@ textarea:focus {
   outline: none;
   border-color: var(--accent-primary);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 2px var(--accent-soft);
+}
+
+select {
+  cursor: pointer;
+}
+
+select option {
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+}
+
+/* Seletor estilizado de sistema na criação de campanha */
+.sistema-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+@media (max-width: 520px) {
+  .sistema-picker {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sistema-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  text-align: left;
+  padding: 0.72rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.12s ease;
+}
+
+.sistema-option:hover {
+  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sistema-option.selecionado {
+  background: var(--accent-soft);
+  border-color: var(--accent-primary);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px var(--accent-soft);
+}
+
+.sistema-option-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.4rem;
+}
+
+.sistema-option-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-main);
+}
+
+.sistema-option-desc {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.35;
 }
 
 label.muted {
