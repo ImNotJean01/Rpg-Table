@@ -1118,3 +1118,67 @@ h3 {
     scroll-behavior: auto !important;
   }
 }
+
+/* Ergonomia Touch, Leitura e Layout Responsivo */
+.prose-leitura {
+  max-width: 74ch;
+}
+
+.auth-tab-btn {
+  white-space: nowrap;
+}
+
+.auth-footer-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.biblioteca-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.biblioteca-busca {
+  width: 100%;
+  max-width: 310px;
+}
+
+@media (max-width: 640px) {
+  .biblioteca-busca {
+    max-width: none;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .btn-sm {
+    min-height: 40px;
+    padding: 0.45rem 0.8rem;
+  }
+
+  .auth-tab-btn {
+    min-height: 40px;
+    padding: 0.48rem 0.4rem;
+    font-size: 0.79rem;
+  }
+
+  .seletor-atmosfera-btn {
+    min-height: 36px;
+    padding: 0.35rem 0.7rem;
+  }
+
+  .input-icon-right {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  input,
+  select {
+    min-height: 44px;
+  }
+}

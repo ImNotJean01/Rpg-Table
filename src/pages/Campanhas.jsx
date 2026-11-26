@@ -45,16 +45,20 @@ Dia, horário e onde vocês jogam (Discord, chamada, presencial).`;
 
 export default function Campanhas({ user }) {
   const navigate = useNavigate();
-  const { syncFromSystem } = useRpgTheme();
+  const { sistemaId, guiaPath, exemploCampanha, syncFromSystem } = useRpgTheme();
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
   const [nome, setNome] = useState('');
-  const [sistema, setSistema] = useState('ordem-paranormal');
+  const [sistema, setSistema] = useState(sistemaId);
   const [codigo, setCodigo] = useState('');
   const [erro, setErro] = useState('');
   const [criando, setCriando] = useState(false);
   const [campanhaParaApagar, setCampanhaParaApagar] = useState(null);
   const [apagando, setApagando] = useState(false);
+
+  useEffect(() => {
+    setSistema(sistemaId);
+  }, [sistemaId]);
 
   async function carregar() {
     if (!supabase || !user) return;
@@ -159,7 +163,7 @@ export default function Campanhas({ user }) {
           <Link to="/biblioteca" className="btn btn-sm">
             <BookOpenText size={15} weight="duotone" /> Biblioteca
           </Link>
-          <Link to="/guias/ordem-paranormal" className="btn btn-sm">
+          <Link to={guiaPath} className="btn btn-sm">
             <Compass size={15} weight="duotone" /> Guias
           </Link>
         </div>
@@ -176,7 +180,7 @@ export default function Campanhas({ user }) {
           <input
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            placeholder="Nome da campanha (ex: O Caso da Mansão)"
+            placeholder={`Nome da campanha (${exemploCampanha})`}
             required
           />
           <AnimatePresence initial={false}>

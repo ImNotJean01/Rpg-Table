@@ -1,7 +1,12 @@
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Fingerprint, Flame, Sword, type Icon } from '@phosphor-icons/react';
-import { useRpgTheme, type RpgTheme } from '../context/ThemeContext';
+import {
+  THEME_META,
+  useRpgTheme,
+  type RpgSistemaId,
+  type RpgTheme,
+} from '../context/ThemeContext';
 import { cn } from '../lib/cn';
 
 interface SystemOption {
@@ -35,9 +40,14 @@ const SYSTEM_OPTIONS: readonly SystemOption[] = [
 interface SystemSwitcherProps {
   sistemaTema?: string | null;
   className?: string;
+  onSelect?: (theme: RpgTheme, sistemaId: RpgSistemaId) => void;
 }
 
-export default function SystemSwitcher({ sistemaTema = null, className }: SystemSwitcherProps) {
+export default function SystemSwitcher({
+  sistemaTema = null,
+  className,
+  onSelect,
+}: SystemSwitcherProps) {
   const { theme, setTheme, syncFromSystem } = useRpgTheme();
 
   useEffect(() => {
@@ -49,9 +59,9 @@ export default function SystemSwitcher({ sistemaTema = null, className }: System
   return (
     <div
       role="radiogroup"
-      aria-label="Tema do sistema de RPG"
+      aria-label="Sistema de RPG ativo"
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-1 transition-colors duration-300 ease-out',
+        'system-switcher inline-flex items-center gap-1 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-1 transition-colors duration-300 ease-out',
         className
       )}
     >
@@ -64,11 +74,14 @@ export default function SystemSwitcher({ sistemaTema = null, className }: System
             role="radio"
             aria-checked={active}
             title={title}
-            onClick={() => setTheme(id)}
+            onClick={() => {
+              setTheme(id);
+              onSelect?.(id, THEME_META[id].sistemaId);
+            }}
             className={cn(
-              'relative inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-xs transition-colors duration-300 ease-out',
+              'seletor-atmosfera-btn relative inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 font-mono text-xs transition-colors duration-300 ease-out',
               active
-                ? 'text-[var(--text-primary)]'
+                ? 'text-[var(--text-primary)] font-semibold'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
             )}
           >
@@ -80,7 +93,12 @@ export default function SystemSwitcher({ sistemaTema = null, className }: System
                 style={{ boxShadow: '0 0 18px var(--glow-color)' }}
               />
             )}
-            <Icon size={14} weight={active ? 'duotone' : 'light'} className="relative z-10" />
+            <Icon
+              size={14}
+              weight={active ? 'duotone' : 'light'}
+              className="relative z-10"
+              aria-hidden="true"
+            />
             <span className="relative z-10">{label}</span>
           </button>
         );

@@ -16,6 +16,7 @@ import {
 } from '@phosphor-icons/react';
 import { formatAuthError, isSupabaseConfigured, supabase } from '../lib/supabase.js';
 import { cn } from '../lib/cn.js';
+import { useRpgTheme } from '../context/ThemeContext.tsx';
 import SeletorAtmosfera from './SeletorAtmosfera.jsx';
 
 function avaliarForcaSenha(valor) {
@@ -52,6 +53,7 @@ function avaliarForcaSenha(valor) {
 }
 
 export default function AuthScreen() {
+  const { guiaPath, nomeSistema } = useRpgTheme();
   const [modo, setModo] = useState('login'); // 'login' | 'cadastro' | 'esqueci' | 'magic'
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -149,7 +151,7 @@ export default function AuthScreen() {
   const abas = [
     { id: 'login', label: 'Entrar', icone: SignIn },
     { id: 'cadastro', label: 'Criar conta', icone: UserPlus },
-    { id: 'magic', label: 'Por e-mail', icone: EnvelopeSimple, title: 'Entrar com link no e-mail sem precisar de senha' },
+    { id: 'magic', label: 'Link', icone: EnvelopeSimple, title: 'Entrar com link no e-mail sem precisar de senha' },
   ];
 
   return (
@@ -492,12 +494,16 @@ export default function AuthScreen() {
 
         <hr className="hairline" />
 
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <Link to="/biblioteca" className="btn btn-sm btn-ghost">
-            <BookOpenText size={15} weight="duotone" /> Biblioteca de Livros
+        <div className="auth-footer-links">
+          <Link to="/biblioteca" className="btn btn-sm">
+            <BookOpenText size={15} weight="duotone" aria-hidden="true" /> Biblioteca
           </Link>
-          <Link to="/guias/ordem-paranormal" className="btn btn-sm btn-ghost">
-            <Compass size={15} weight="duotone" /> Guias dos Sistemas
+          <Link
+            to={guiaPath}
+            className="btn btn-sm"
+            title={`Abrir guia de regras de ${nomeSistema}`}
+          >
+            <Compass size={15} weight="duotone" aria-hidden="true" /> Guia ({nomeSistema.split(' ')[0]})
           </Link>
         </div>
       </motion.div>

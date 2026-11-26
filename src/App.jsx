@@ -31,6 +31,7 @@ import { useAuth } from './hooks/useAuth.js';
 import { useCampanha } from './hooks/useCampanha.js';
 import { supabase } from './lib/supabase.js';
 import { cn } from './lib/cn.js';
+import { useRpgTheme } from './context/ThemeContext.tsx';
 import AuthScreen from './components/AuthScreen.jsx';
 import SeletorAtmosfera from './components/SeletorAtmosfera.jsx';
 import Campanhas from './pages/Campanhas.jsx';
@@ -48,10 +49,17 @@ import Config from './pages/Config.jsx';
 function CampanhaShell({ user, perfil, onSignOut }) {
   const { id } = useParams();
   const location = useLocation();
+  const { syncFromSystem } = useRpgTheme();
   const { campanha, setCampanha, isMestre, sistema, loading, erro } = useCampanha(
     id,
     user.id
   );
+
+  useEffect(() => {
+    if (sistema?.tema) {
+      syncFromSystem(sistema.tema);
+    }
+  }, [sistema?.tema, syncFromSystem]);
   const [pistaNova, setPistaNova] = useState(null);
   const [menuMobileAberto, setMenuMobileAberto] = useState(false);
   const [sidebarRecolhida, setSidebarRecolhida] = useState(() => {
@@ -173,7 +181,6 @@ function CampanhaShell({ user, perfil, onSignOut }) {
         </div>
 
         <div className="row">
-          <SeletorAtmosfera sistemaTema={sistema.tema} />
           <span className="muted">{perfil?.nome}</span>
           <button type="button" className="btn btn-sm btn-ghost" onClick={onSignOut}>
             <SignOut size={15} weight="light" /> Sair
