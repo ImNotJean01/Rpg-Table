@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Eye, GridFour, Image, MapPin, Plus, X } from '@phosphor-icons/react';
+import {
+  Check,
+  Eye,
+  GridFour,
+  Image,
+  MapPin,
+  PencilSimple,
+  Plus,
+  Trash,
+  X,
+} from '@phosphor-icons/react';
 import { useRealtimeTable } from '../hooks/useRealtimeTable.js';
 import { supabase } from '../lib/supabase.js';
 import { rolarNoServidor } from '../lib/dados.js';
@@ -11,6 +21,7 @@ import Iniciativa from '../components/mesa/Iniciativa.jsx';
 import RoladorDados from '../components/mesa/RoladorDados.jsx';
 import UploadImagem from '../components/UploadImagem.jsx';
 import FichaDinamica from '../components/ficha/FichaDinamica.jsx';
+import ConfirmModal from '../components/ConfirmModal.jsx';
 import { aplicarCarimbo } from '../components/tabuleiro/assistente/carimbos.js';
 import { criarHistorico } from '../components/tabuleiro/historico.js';
 
@@ -50,6 +61,13 @@ export default function Tabuleiro({
   const [pinEditando, setPinEditando] = useState(null);
   const [fichaAbertaId, setFichaAbertaId] = useState(null);
   const [configFundoAberto, setConfigFundoAberto] = useState(false);
+  const [renomeandoCena, setRenomeandoCena] = useState(false);
+  const [novoNomeCena, setNovoNomeCena] = useState('');
+  const [salvandoNomeCena, setSalvandoNomeCena] = useState(false);
+  const [cenaParaApagar, setCenaParaApagar] = useState(null);
+  const [apagandoCena, setApagandoCena] = useState(false);
+  const [confirmarLimparMapa, setConfirmarLimparMapa] = useState(false);
+  const [limpandoMapa, setLimpandoMapa] = useState(false);
 
   useEffect(() => {
     if (!fichaAbertaId) return;
@@ -169,6 +187,57 @@ export default function Tabuleiro({
   async function ativarCena(cenaId) {
     if (!supabase) return;
     await supabase.rpc('ativar_cena', { p_cena: cenaId });
+  }
+
+  function iniciarRenomearCena() {
+    if (!cenaAtual) return;
+    setNovoNomeCena(cenaAtual.nome || '');
+    setRenomeandoCena(true);
+  }
+
+  async function salvarNomeCena(e) {
+    e?.preventDefault();
+    if (!supabase || !cenaAtual) return;
+    const limpo = novoNomeCena.trim();
+    if (!limpo) return;
+    setSalvandoNomeCena(true);
+    try {
+      const { error } = await supabase
+        .from('cenas')
+        .update({ nome: limpo })
+        .eq('id', cenaAtual.id);
+      if (!error) {
+        setCenas((prev) =>
+          prev.map((c) => (c.id === cenaAtual.id ? { ...c, nome: limpo } : c))
+        );
+        setRenomeandoCena(false);
+      }
+    } finally {
+      setSalvandoNomeCena(false);
+    }
+  }
+
+  async function confirmarApagarCena() {
+    if (!supabase || !cenaParaApagar) return;
+    setApagandoCena(true);
+    try {
+      const idApagar = cenaParaApagar.id;
+      const eraAtiva = Boolean(cenaParaApagar.ativa);
+      const restantes = cenas.filter((c) => c.id !== idApagar);
+      const { error } = await supabase.from('cenas').delete().eq('id', idApagar);
+      if (!error) {
+        setCenas(restantes);
+        setCenaParaApagar(null);
+        setRenomeandoCena(false);
+        const proxima = restantes[0] || null;
+        setCenaSelecionadaId(proxima?.id || null);
+        if (eraAtiva && proxima) {
+          await supabase.rpc('ativar_cena', { p_cena: proxima.id });
+        }
+      }
+    } finally {
+      setApagandoCena(false);
+    }
   }
 
   async function adicionarPin() {
@@ -338,16 +407,21 @@ export default function Tabuleiro({
     });
   }
 
-  async function limparCenaCompleta() {
+  async function confirmarLimparCenaCompleta() {
     if (!supabase || !cenaAtual) return;
-    if (!confirm('Limpar terreno, desenhos e pins de cenário desta cena? (Pins dos jogadores serão mantidos.)')) return;
-    const limparPatch = {};
-    for (const k of Object.keys(cenaAtual.terreno || {})) limparPatch[k] = null;
-    await Promise.all([
-      Object.keys(limparPatch).length ? enviarPatchTerreno(limparPatch) : Promise.resolve(),
-      supabase.from('desenhos').delete().eq('cena_id', cenaAtual.id),
-      supabase.from('pins').delete().eq('cena_id', cenaAtual.id).is('personagem_id', null),
-    ]);
+    setLimpandoMapa(true);
+    try {
+      const limparPatch = {};
+      for (const k of Object.keys(cenaAtual.terreno || {})) limparPatch[k] = null;
+      await Promise.all([
+        Object.keys(limparPatch).length ? enviarPatchTerreno(limparPatch) : Promise.resolve(),
+        supabase.from('desenhos').delete().eq('cena_id', cenaAtual.id),
+        supabase.from('pins').delete().eq('cena_id', cenaAtual.id).is('personagem_id', null),
+      ]);
+      setConfirmarLimparMapa(false);
+    } finally {
+      setLimpandoMapa(false);
+    }
   }
 
   return (
@@ -365,24 +439,87 @@ export default function Tabuleiro({
         <div className="row">
           {isMestre ? (
             <>
-              <label htmlFor="tabuleiro-cena-select" className="sr-only">
-                Selecionar cena do tabuleiro
-              </label>
-              <select
-                id="tabuleiro-cena-select"
-                value={cenaAtual?.id || ''}
-                onChange={(e) => setCenaSelecionadaId(e.target.value)}
-                style={{ width: 'auto', padding: '0.35rem 0.6rem' }}
-              >
-                {cenas.length === 0 && <option value="">Sem cenas ainda</option>}
-                {cenas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.ativa ? `${c.nome} (Ativa)` : c.nome}
-                  </option>
-                ))}
-              </select>
+              {renomeandoCena && cenaAtual ? (
+                <form onSubmit={salvarNomeCena} className="row" style={{ gap: '0.35rem' }}>
+                  <input
+                    value={novoNomeCena}
+                    onChange={(e) => setNovoNomeCena(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') setRenomeandoCena(false);
+                    }}
+                    placeholder="Nome da cena"
+                    autoFocus
+                    required
+                    style={{ width: 210, padding: '0.3rem 0.55rem', minHeight: 34 }}
+                    aria-label="Novo nome da cena"
+                  />
+                  <button
+                    type="submit"
+                    className="btn btn-sm btn-primary"
+                    disabled={salvandoNomeCena}
+                    title="Salvar nome da cena"
+                    aria-label="Salvar nome da cena"
+                  >
+                    <Check size={14} weight="bold" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => setRenomeandoCena(false)}
+                    disabled={salvandoNomeCena}
+                    title="Cancelar"
+                    aria-label="Cancelar renomeação"
+                  >
+                    <X size={14} weight="light" aria-hidden="true" />
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <label htmlFor="tabuleiro-cena-select" className="sr-only">
+                    Selecionar cena do tabuleiro
+                  </label>
+                  <select
+                    id="tabuleiro-cena-select"
+                    value={cenaAtual?.id || ''}
+                    onChange={(e) => {
+                      setRenomeandoCena(false);
+                      setCenaSelecionadaId(e.target.value);
+                    }}
+                    style={{ width: 'auto', padding: '0.35rem 0.6rem' }}
+                  >
+                    {cenas.length === 0 && <option value="">Sem cenas ainda</option>}
+                    {cenas.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.ativa ? `${c.nome} (Ativa)` : c.nome}
+                      </option>
+                    ))}
+                  </select>
+                  {cenaAtual && (
+                    <>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-ghost"
+                        onClick={iniciarRenomearCena}
+                        title="Renomear cena atual"
+                        aria-label="Renomear cena atual"
+                      >
+                        <PencilSimple size={14} weight="duotone" aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-danger"
+                        onClick={() => setCenaParaApagar(cenaAtual)}
+                        title="Excluir cena atual"
+                        aria-label="Excluir cena atual"
+                      >
+                        <Trash size={14} weight="light" aria-hidden="true" />
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
               <button type="button" className="btn btn-sm" onClick={criarCena}>
-                <Plus size={14} /> Nova cena
+                <Plus size={14} aria-hidden="true" /> Nova cena
               </button>
               {cenaAtual && (
                 <button
@@ -390,7 +527,7 @@ export default function Tabuleiro({
                   className={`btn btn-sm ${cenaAtual.ativa ? 'btn-primary' : ''}`}
                   onClick={() => ativarCena(cenaAtual.id)}
                 >
-                  <Eye size={14} /> {cenaAtual.ativa ? 'Ativa para jogadores' : 'Mostrar para jogadores'}
+                  <Eye size={14} aria-hidden="true" /> {cenaAtual.ativa ? 'Ativa para jogadores' : 'Mostrar para jogadores'}
                 </button>
               )}
             </>
@@ -402,19 +539,19 @@ export default function Tabuleiro({
         {isMestre && cenaAtual && (
           <div className="row">
             <button type="button" className="btn btn-sm btn-primary" onClick={adicionarPin}>
-              <MapPin size={14} /> Novo Pin
+              <MapPin size={14} aria-hidden="true" /> Novo Pin
             </button>
             <button
               type="button"
               className="btn btn-sm"
               onClick={() => setConfigFundoAberto((v) => !v)}
             >
-              <Image size={14} /> Fundo & Grade
+              <Image size={14} aria-hidden="true" /> Fundo & Grade
             </button>
             <button
               type="button"
               className="btn btn-sm btn-danger"
-              onClick={limparCenaCompleta}
+              onClick={() => setConfirmarLimparMapa(true)}
               title="Limpar terreno, textos e pins de cenário"
             >
               Limpar mapa
@@ -629,6 +766,25 @@ export default function Tabuleiro({
           </div>
         </div>
       )}
+      <ConfirmModal
+        aberto={Boolean(cenaParaApagar)}
+        titulo="Excluir cena"
+        mensagem={`Tem certeza que deseja excluir a cena "${cenaParaApagar?.nome}"? Todos os pins, terrenos e desenhos desta cena serão apagados permanentemente.`}
+        textoConfirmar="Sim, excluir cena"
+        carregando={apagandoCena}
+        onConfirmar={confirmarApagarCena}
+        onCancelar={() => setCenaParaApagar(null)}
+      />
+
+      <ConfirmModal
+        aberto={confirmarLimparMapa}
+        titulo="Limpar mapa da cena"
+        mensagem={`Limpar terreno, desenhos e pins de cenário de "${cenaAtual?.nome}"? Os pins vinculados aos personagens dos jogadores serão mantidos.`}
+        textoConfirmar="Sim, limpar mapa"
+        carregando={limpandoMapa}
+        onConfirmar={confirmarLimparCenaCompleta}
+        onCancelar={() => setConfirmarLimparMapa(false)}
+      />
     </div>
   );
 }
