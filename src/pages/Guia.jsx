@@ -30,10 +30,7 @@ export default function Guia({ sistemaAtual = null }) {
         className="container stack"
       >
         <div className="space-between" style={{ alignItems: 'flex-end' }}>
-          <div>
-            <span className="section-kicker">Compêndio de Regras</span>
-            <h1 style={{ margin: '0.2rem 0 0' }}>Como funciona: {sistemaAtual.nome}</h1>
-          </div>
+          <h1 style={{ margin: 0 }}>Como funciona: {sistemaAtual.nome}</h1>
           <Link to="../biblioteca" className="btn btn-sm">
             <BookOpenText size={15} weight="duotone" aria-hidden="true" /> Ver links do livro
           </Link>
@@ -69,8 +66,7 @@ export default function Guia({ sistemaAtual = null }) {
 
       <div className="space-between" style={{ alignItems: 'flex-end', gap: '1rem' }}>
         <div>
-          <span className="section-kicker" style={{ display: 'block' }}>Compêndio de Regras</span>
-          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>{ativo.nome}</h1>
+          <h1 style={{ margin: '0 0 0.2rem' }}>{ativo.nome}</h1>
           <p className="muted" style={{ margin: 0 }}>
             Resumo rápido em português para aprender como o sistema funciona antes da sessão.
           </p>

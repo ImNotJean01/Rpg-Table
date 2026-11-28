@@ -88,8 +88,7 @@ export default function Pistas({ campanhaId, isMestre }) {
     >
       <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <span className="section-kicker">Arquivo de Evidências</span>
-          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Mural de Pistas &amp; Documentos</h1>
+          <h1 style={{ margin: '0 0 0.2rem' }}>Mural de Pistas &amp; Documentos</h1>
           <p className="muted" style={{ margin: 0 }}>
             Cartas, fotos, recortes e evidências reveladas ao vivo durante a investigação.
           </p>

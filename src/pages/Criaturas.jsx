@@ -97,8 +97,7 @@ export default function Criaturas({ campanhaId, sistema, isMestre }) {
     >
       <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <span className="section-kicker">Ameaças &amp; Encontros</span>
-          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Bestiário &amp; Criaturas</h1>
+          <h1 style={{ margin: '0 0 0.2rem' }}>Bestiário &amp; Criaturas</h1>
           <p className="muted" style={{ margin: 0 }}>
             Monstros ocultos ficam invisíveis até o mestre revelar na hora do encontro.
           </p>

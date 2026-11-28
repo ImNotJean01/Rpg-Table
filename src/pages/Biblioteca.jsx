@@ -103,10 +103,7 @@ export default function Biblioteca({ campanhaId = null, sistema = null, isMestre
 
       <div className="biblioteca-header">
         <div>
-          <span className="section-kicker" style={{ display: 'block' }}>
-            Acervo &amp; Referências
-          </span>
-          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Biblioteca de Livros e Links</h1>
+          <h1 style={{ margin: '0 0 0.2rem' }}>Biblioteca de Livros e Links</h1>
           <p className="muted" style={{ margin: 0 }}>
             Links oficiais, referências gratuitas em português e ferramentas úteis para jogar.
           </p>

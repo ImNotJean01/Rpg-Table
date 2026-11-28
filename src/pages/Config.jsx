@@ -130,8 +130,7 @@ export default function Config({ campanha, setCampanha, sistema, isMestre }) {
       style={{ gap: '1.25rem' }}
     >
       <div>
-        <span className="section-kicker">Controle do Mestre</span>
-        <h1 style={{ margin: '0.2rem 0 0' }}>Configurações da Campanha</h1>
+        <h1 style={{ margin: 0 }}>Configurações da Campanha</h1>
       </div>
 
       <div className="card stack">
@@ -218,7 +217,7 @@ export default function Config({ campanha, setCampanha, sistema, isMestre }) {
       </div>
 
       <div className="card stack" style={{ borderColor: 'rgba(224,49,49,0.42)' }}>
-        <strong style={{ color: '#ff9e9e' }}>Zona de Perigo</strong>
+        <strong style={{ color: 'var(--danger-text)' }}>Zona de Perigo</strong>
         <p className="muted" style={{ margin: 0 }}>
           Apagar esta campanha remove permanentemente a história, fichas, NPCs, criaturas, pistas e mapas para todos os jogadores.
         </p>

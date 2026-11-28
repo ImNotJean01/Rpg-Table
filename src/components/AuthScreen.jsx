@@ -164,8 +164,7 @@ export default function AuthScreen() {
       >
         <div className="space-between" style={{ alignItems: 'flex-start' }}>
           <div>
-            <span className="section-kicker">Crônicas &amp; Tabuleiro</span>
-            <h1 style={{ margin: '0.2rem 0 0.25rem' }}>Mesa</h1>
+            <h1 style={{ margin: '0 0 0.25rem' }}>Mesa</h1>
             <p className="muted" style={{ margin: 0 }}>
               História, fichas, pistas e tabuleiro ao vivo para a sua campanha.
             </p>

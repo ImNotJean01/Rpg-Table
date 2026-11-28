@@ -39,6 +39,14 @@ export default function PainelPin({
       });
   }, [isMestre, pin.id]);
 
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === 'Escape') onFechar();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onFechar]);
+
   const vinculado =
     personagens.find((p) => p.id === (personagemId || pin.personagem_id)) ||
     criaturas.find((c) => c.id === (criaturaId || pin.criatura_id));
@@ -69,12 +77,23 @@ export default function PainelPin({
   }
 
   return (
-    <div className="modal-backdrop" onClick={onFechar}>
+    <div
+      className="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label={isMestre ? 'Editar Pin' : pin.nome}
+      onClick={onFechar}
+    >
       <div className="modal-box stack" onClick={(e) => e.stopPropagation()}>
         <div className="space-between">
           <h3 style={{ margin: 0 }}>{isMestre ? 'Editar Pin' : pin.nome}</h3>
-          <button type="button" className="btn btn-sm btn-ghost" onClick={onFechar}>
-            <X size={16} />
+          <button
+            type="button"
+            className="btn btn-sm btn-ghost btn-icon"
+            onClick={onFechar}
+            aria-label="Fechar janela do pin"
+          >
+            <X size={16} aria-hidden="true" />
           </button>
         </div>
 
@@ -141,20 +160,16 @@ export default function PainelPin({
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <div>
                 <label className="muted">Cor</label>
-                <div className="row" style={{ gap: '0.35rem', marginTop: '0.25rem' }}>
-                  {CORES.map((c) => (
+                <div className="row" style={{ gap: '0.4rem', marginTop: '0.25rem' }} role="group" aria-label="Cor do pin">
+                  {CORES.map((c, idx) => (
                     <button
                       key={c}
                       type="button"
+                      aria-pressed={cor === c}
+                      aria-label={`Selecionar cor do pin ${idx + 1}`}
+                      className={`color-swatch ${cor === c ? 'ativo' : ''}`}
                       onClick={() => setCor(c)}
-                      style={{
-                        width: 26,
-                        height: 26,
-                        borderRadius: '50%',
-                        background: c,
-                        border: cor === c ? '3px solid #fff' : '1px solid var(--border)',
-                        cursor: 'pointer',
-                      }}
+                      style={{ background: c }}
                     />
                   ))}
                 </div>

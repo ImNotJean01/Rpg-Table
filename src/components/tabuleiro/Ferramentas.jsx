@@ -76,11 +76,12 @@ export default function Ferramentas({
               <button
                 key={b.id}
                 type="button"
+                aria-pressed={ativa}
                 className={cn('btn btn-sm', ativa && 'btn-primary')}
                 onClick={() => setFerramenta(b.id)}
                 title={b.label}
               >
-                <Icon size={14} weight={ativa ? 'duotone' : 'light'} /> {b.label}
+                <Icon size={14} weight={ativa ? 'duotone' : 'light'} aria-hidden="true" /> {b.label}
               </button>
             );
           })}
@@ -90,28 +91,31 @@ export default function Ferramentas({
           <div className="row" style={{ gap: '0.3rem' }}>
             <button
               type="button"
+              aria-pressed={assistenteAberto}
               className={cn('btn btn-sm', assistenteAberto && 'btn-primary')}
               onClick={onToggleAssistente}
             >
-              <PuzzlePiece size={14} weight="duotone" /> Assistente de Mapa
+              <PuzzlePiece size={14} weight="duotone" aria-hidden="true" /> Assistente de Mapa
             </button>
             <button
               type="button"
-              className="btn btn-sm"
+              className="btn btn-sm btn-icon"
               disabled={!podeDesfazer}
               onClick={onDesfazer}
               title="Desfazer (Ctrl+Z)"
+              aria-label="Desfazer última ação no mapa"
             >
-              <ArrowCounterClockwise size={14} weight="light" />
+              <ArrowCounterClockwise size={14} weight="light" aria-hidden="true" />
             </button>
             <button
               type="button"
-              className="btn btn-sm"
+              className="btn btn-sm btn-icon"
               disabled={!podeRefazer}
               onClick={onRefazer}
               title="Refazer (Ctrl+Y)"
+              aria-label="Refazer ação no mapa"
             >
-              <ArrowClockwise size={14} weight="light" />
+              <ArrowClockwise size={14} weight="light" aria-hidden="true" />
             </button>
           </div>
         )}
@@ -159,21 +163,17 @@ export default function Ferramentas({
       )}
 
       {isMestre && ['caneta', 'linha', 'ret', 'circulo', 'texto'].includes(ferramenta) && (
-        <div className="row" style={{ gap: '0.35rem' }}>
-          <span className="muted" style={{ fontSize: '0.8rem' }}>Cor do traço:</span>
-          {CORES_DESENHO.map((c) => (
+        <div className="row" style={{ gap: '0.4rem' }} role="group" aria-label="Cor do traço">
+          <span className="muted" style={{ fontSize: '0.82rem' }}>Cor do traço:</span>
+          {CORES_DESENHO.map((c, idx) => (
             <button
               key={c}
               type="button"
+              aria-pressed={corDesenho === c}
+              aria-label={`Selecionar cor de desenho ${idx + 1}`}
+              className={cn('color-swatch', corDesenho === c && 'ativo')}
               onClick={() => setCorDesenho(c)}
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: '50%',
-                background: c,
-                border: corDesenho === c ? '3px solid #fff' : '1px solid var(--border-subtle)',
-                cursor: 'pointer',
-              }}
+              style={{ background: c }}
             />
           ))}
         </div>

@@ -51,6 +51,15 @@ export default function Tabuleiro({
   const [fichaAbertaId, setFichaAbertaId] = useState(null);
   const [configFundoAberto, setConfigFundoAberto] = useState(false);
 
+  useEffect(() => {
+    if (!fichaAbertaId) return;
+    function onKey(e) {
+      if (e.key === 'Escape') setFichaAbertaId(null);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [fichaAbertaId]);
+
   // Ferramentas Fase 2
   const [ferramenta, setFerramenta] = useState('mao');
   const [terrenoTipo, setTerrenoTipo] = useState('pedra');
@@ -356,7 +365,11 @@ export default function Tabuleiro({
         <div className="row">
           {isMestre ? (
             <>
+              <label htmlFor="tabuleiro-cena-select" className="sr-only">
+                Selecionar cena do tabuleiro
+              </label>
               <select
+                id="tabuleiro-cena-select"
                 value={cenaAtual?.id || ''}
                 onChange={(e) => setCenaSelecionadaId(e.target.value)}
                 style={{ width: 'auto', padding: '0.35rem 0.6rem' }}
@@ -364,7 +377,7 @@ export default function Tabuleiro({
                 {cenas.length === 0 && <option value="">Sem cenas ainda</option>}
                 {cenas.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.ativa ? '● ' : ''}{c.nome}
+                    {c.ativa ? `${c.nome} (Ativa)` : c.nome}
                   </option>
                 ))}
               </select>
@@ -559,20 +572,26 @@ export default function Tabuleiro({
       )}
 
       {fichaAbertaId && personagens.find((p) => p.id === fichaAbertaId) && (
-        <div className="modal-backdrop" onClick={() => setFichaAbertaId(null)}>
+        <div
+          className="modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Ficha do Personagem"
+          onClick={() => setFichaAbertaId(null)}
+        >
           <div
             className="modal-box stack"
             style={{ maxWidth: 880 }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-between">
-              <span className="section-kicker">Ficha do Personagem (direto do Tabuleiro)</span>
+              <h3 style={{ margin: 0 }}>Ficha do Personagem</h3>
               <button
                 type="button"
                 className="btn btn-sm btn-ghost"
                 onClick={() => setFichaAbertaId(null)}
               >
-                <X size={16} weight="light" /> Fechar
+                <X size={16} weight="light" aria-hidden="true" /> Fechar
               </button>
             </div>
             <FichaDinamica

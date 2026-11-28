@@ -163,8 +163,7 @@ export default function Historia({ campanhaId, isMestre }) {
     >
       <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <span className="section-kicker">Manuscrito da Campanha</span>
-          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>História</h1>
+          <h1 style={{ margin: '0 0 0.2rem' }}>História</h1>
           <p className="muted" style={{ margin: 0 }}>
             {modoEscrever
               ? 'Escreva de forma contínua. Use "Encerrar capítulo" ou digite ---fim--- em uma linha para abrir o próximo.'

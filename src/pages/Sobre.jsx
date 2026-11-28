@@ -38,8 +38,7 @@ export default function Sobre({ campanha, setCampanha, isMestre }) {
     >
       <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <span className="section-kicker">Prólogo &amp; Combinados</span>
-          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Sobre a Campanha</h1>
+          <h1 style={{ margin: '0 0 0.2rem' }}>Sobre a Campanha</h1>
           <p className="muted" style={{ margin: 0 }}>
             Premissa, regras da casa, criação de personagem e horários da mesa.
           </p>

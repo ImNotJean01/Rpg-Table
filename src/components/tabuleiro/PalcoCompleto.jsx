@@ -10,7 +10,7 @@ import {
   Stage,
   Text,
 } from 'react-konva';
-import { ZoomIn, ZoomOut } from 'lucide-react';
+import { MagnifyingGlassMinus, MagnifyingGlassPlus } from '@phosphor-icons/react';
 import {
   encaixarNaGrade,
   ICONES_PIN,
@@ -122,7 +122,7 @@ function PinKonva({ pin, grade, podeArrastar, entidade, onMover, onClicar }) {
           align="center"
           text={SIGLAS_PIN[iconeObj.id] || '●'}
           fontStyle="bold"
-          fontFamily="Inter, sans-serif"
+          fontFamily="'Plus Jakarta Sans', system-ui, sans-serif"
           fill="#eceaf2"
           fontSize={Math.max(13, Math.round(tamanhoPx * 0.3))}
         />
@@ -153,7 +153,7 @@ function PinKonva({ pin, grade, podeArrastar, entidade, onMover, onClicar }) {
           align="center"
           text={`${pin.nome}${entidade?.condicoes?.length ? ` (${entidade.condicoes.length})` : ''}`}
           fontSize={11}
-          fontFamily="Inter, sans-serif"
+          fontFamily="'Plus Jakarta Sans', system-ui, sans-serif"
           fill="#eceaf2"
         />
       </Group>
@@ -534,7 +534,7 @@ export default function PalcoCompleto({
             fontSize={13}
             fontStyle="bold"
             letterSpacing={1.5}
-            fontFamily="Inter, sans-serif"
+            fontFamily="'Plus Jakarta Sans', system-ui, sans-serif"
             fill={d.cor || 'rgba(236,234,242,0.85)'}
             shadowColor="#000"
             shadowBlur={6}
@@ -556,6 +556,7 @@ export default function PalcoCompleto({
         width: '100%',
         height: '100%',
         position: 'relative',
+        touchAction: 'none',
         cursor: carimboAtivo ? 'crosshair' : ferramenta === 'mao' ? 'grab' : 'crosshair',
       }}
     >
@@ -766,33 +767,51 @@ export default function PalcoCompleto({
 
       <div
         className="row"
+        role="group"
+        aria-label="Controles de zoom do mapa"
         style={{
           position: 'absolute',
           bottom: 12,
           right: 12,
-          background: 'rgba(12,11,14,0.85)',
-          border: '1px solid var(--border)',
-          borderRadius: 8,
-          padding: '0.25rem 0.45rem',
-          gap: '0.35rem',
+          background: 'color-mix(in srgb, var(--bg-surface) 88%, transparent)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-sm)',
+          padding: '0.25rem 0.4rem',
+          gap: '0.25rem',
+          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.42)',
         }}
       >
         <button
           type="button"
-          className="btn btn-sm btn-ghost"
+          className="btn btn-sm btn-ghost btn-icon"
+          aria-label="Diminuir zoom do mapa"
+          title="Diminuir zoom"
           onClick={() => setEscala((s) => Math.max(0.25, s / 1.15))}
         >
-          <ZoomOut size={14} />
+          <MagnifyingGlassMinus size={15} weight="duotone" aria-hidden="true" />
         </button>
-        <span className="muted" style={{ fontSize: '0.8rem' }}>
-          {Math.round(escala * 100)}%
-        </span>
         <button
           type="button"
-          className="btn btn-sm btn-ghost"
+          className="btn btn-sm btn-ghost mono"
+          title="Voltar para 100% e centralizar mapa"
+          aria-label={`Zoom atual ${Math.round(escala * 100)} por cento. Clique para redefinir para 100%`}
+          onClick={() => {
+            setEscala(1);
+            setStagePos({ x: 60, y: 40 });
+          }}
+          style={{ padding: '0.22rem 0.45rem', fontSize: '0.78rem' }}
+        >
+          {Math.round(escala * 100)}%
+        </button>
+        <button
+          type="button"
+          className="btn btn-sm btn-ghost btn-icon"
+          aria-label="Aumentar zoom do mapa"
+          title="Aumentar zoom"
           onClick={() => setEscala((s) => Math.min(2.5, s * 1.15))}
         >
-          <ZoomIn size={14} />
+          <MagnifyingGlassPlus size={15} weight="duotone" aria-hidden="true" />
         </button>
       </div>
     </div>

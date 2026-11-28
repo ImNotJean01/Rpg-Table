@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   HashRouter,
   Link,
@@ -42,9 +42,10 @@ import Pistas from './pages/Pistas.jsx';
 import Personagens from './pages/Personagens.jsx';
 import Npcs from './pages/Npcs.jsx';
 import Criaturas from './pages/Criaturas.jsx';
-import Tabuleiro from './pages/Tabuleiro.jsx';
 import Biblioteca from './pages/Biblioteca.jsx';
 import Config from './pages/Config.jsx';
+
+const Tabuleiro = lazy(() => import('./pages/Tabuleiro.jsx'));
 
 function CampanhaShell({ user, perfil, onSignOut }) {
   const { id } = useParams();
@@ -262,6 +263,7 @@ function CampanhaShell({ user, perfil, onSignOut }) {
         </aside>
 
         <main className="campanha-main">
+          <Suspense fallback={<div className="container muted">Carregando tabuleiro...</div>}>
           <Routes>
             <Route
               index
@@ -314,12 +316,15 @@ function CampanhaShell({ user, perfil, onSignOut }) {
               }
             />
           </Routes>
+          </Suspense>
         </main>
       </div>
 
       <AnimatePresence>
         {pistaNova && (
           <motion.div
+            role="status"
+            aria-live="polite"
             initial={{ opacity: 0, y: 18, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -329,14 +334,15 @@ function CampanhaShell({ user, perfil, onSignOut }) {
           >
             <div className="space-between">
               <strong className="row" style={{ gap: '0.4rem' }}>
-                <Fingerprint size={16} weight="duotone" /> Nova pista revelada
+                <Fingerprint size={16} weight="duotone" aria-hidden="true" /> Nova pista revelada
               </strong>
               <button
                 type="button"
-                className="btn btn-sm btn-ghost"
+                className="btn btn-sm btn-ghost btn-icon"
+                aria-label="Fechar aviso de nova pista"
                 onClick={() => setPistaNova(null)}
               >
-                <X size={14} weight="light" />
+                <X size={14} weight="light" aria-hidden="true" />
               </button>
             </div>
             <div>{pistaNova.titulo}</div>
@@ -387,28 +393,35 @@ function NovaSenhaScreen({ onConcluir }) {
         onSubmit={salvar}
         className="card dossie-papel stack"
       >
-        <span className="section-kicker">Recuperação de Acesso</span>
         <h2 style={{ margin: 0 }}>Definir nova senha</h2>
         <p className="muted" style={{ margin: 0 }}>
           Digite sua nova senha abaixo para continuar na Mesa.
         </p>
-        <input
-          type="password"
-          value={novaSenha}
-          onChange={(e) => setNovaSenha(e.target.value)}
-          placeholder="Nova senha (mín. 6 caracteres)"
-          minLength={6}
-          required
-        />
-        <input
-          type="password"
-          value={confirmar}
-          onChange={(e) => setConfirmar(e.target.value)}
-          placeholder="Confirmar nova senha"
-          minLength={6}
-          required
-        />
-        {erro && <div className="badge badge-accent">{erro}</div>}
+        <div>
+          <label htmlFor="rec-nova-senha">Nova senha</label>
+          <input
+            id="rec-nova-senha"
+            type="password"
+            value={novaSenha}
+            onChange={(e) => setNovaSenha(e.target.value)}
+            placeholder="Mínimo de 6 caracteres"
+            minLength={6}
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="rec-confirmar-senha">Confirmar nova senha</label>
+          <input
+            id="rec-confirmar-senha"
+            type="password"
+            value={confirmar}
+            onChange={(e) => setConfirmar(e.target.value)}
+            placeholder="Repita a nova senha"
+            minLength={6}
+            required
+          />
+        </div>
+        {erro && <div role="alert" className="badge badge-accent">{erro}</div>}
         <button type="submit" className="btn btn-primary" disabled={salvando}>
           {salvando ? 'Salvando...' : 'Salvar nova senha'}
         </button>

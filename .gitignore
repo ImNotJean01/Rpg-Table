@@ -19,3 +19,11 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Agent skills & Impeccable local files (remova PRODUCT.md/DESIGN.md abaixo se quiser subi-los ao GitHub)
+.agent/
+.agents/
+.impeccable/
+.npm-tmp-cache/
+PRODUCT.md
+DESIGN.md

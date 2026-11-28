@@ -53,7 +53,7 @@ export default function UploadImagem({ pasta = 'geral', valor, onChange, label =
           />
         </label>
       </div>
-      {erro && <span className="muted" style={{ color: '#ff8787' }}>{erro}</span>}
+      {erro && <span className="muted" style={{ color: 'var(--danger-text)' }}>{erro}</span>}
       {valor && (
         <img
           src={valor}

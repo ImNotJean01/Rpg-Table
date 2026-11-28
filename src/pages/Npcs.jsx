@@ -99,8 +99,7 @@ export default function Npcs({ campanhaId, isMestre }) {
     >
       <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <span className="section-kicker">Personagens do Mundo</span>
-          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Elenco &amp; NPCs</h1>
+          <h1 style={{ margin: '0 0 0.2rem' }}>Elenco &amp; NPCs</h1>
           <p className="muted" style={{ margin: 0 }}>
             Aliados, contatos, testemunhas e suspeitos que cruzaram o caminho do grupo.
           </p>

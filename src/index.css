@@ -39,6 +39,12 @@
   --glow-top: rgba(109, 40, 217, 0.14);
   --glow-secondary: rgba(6, 182, 212, 0.08);
   --btn-primary-text: #f4f4f6;
+  --accent-text: #a78bfa;
+  --accent-text-hover: #c4b5fd;
+  --stage-bg: #07070a;
+  --danger-text: #ff9e9e;
+  --success-text: #8ce99a;
+  --warn-text: #f3d27a;
 }
 
 /* 2. D&D 5e — Fantasia Épica Clássica */
@@ -60,6 +66,12 @@
   --glow-top: rgba(185, 28, 28, 0.13);
   --glow-secondary: rgba(217, 119, 6, 0.09);
   --btn-primary-text: #faf5ee;
+  --accent-text: #f87171;
+  --accent-text-hover: #fca5a5;
+  --stage-bg: #12100e;
+  --danger-text: #fca5a5;
+  --success-text: #86efac;
+  --warn-text: #fde68a;
 }
 
 /* 3. Tormenta 20 — Alta Fantasia & Ameaça Rubra */
@@ -81,4 +93,10 @@
   --glow-top: rgba(225, 29, 72, 0.14);
   --glow-secondary: rgba(245, 158, 11, 0.08);
   --btn-primary-text: #fff1f2;
+  --accent-text: #fb7185;
+  --accent-text-hover: #fda4af;
+  --stage-bg: #0c0407;
+  --danger-text: #fda4af;
+  --success-text: #86efac;
+  --warn-text: #fcd34d;
 }

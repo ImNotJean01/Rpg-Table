@@ -55,6 +55,18 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
     ? { id: 'novo', nome: '', dono_id: userId, condicoes: [], dados: {} }
     : personagens.find((p) => p.id === selecionadoId) || null;
 
+  useEffect(() => {
+    if (!selecionado) return;
+    function onKey(e) {
+      if (e.key === 'Escape') {
+        setCriandoNovo(false);
+        setSelecionadoId(null);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [Boolean(selecionado)]);
+
   function abrirNovoPersonagem() {
     setSelecionadoId(null);
     setCriandoNovo(true);
@@ -170,8 +182,7 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
     >
       <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <span className="section-kicker">Fichas &amp; Agentes</span>
-          <h1 style={{ margin: '0.2rem 0 0.2rem' }}>Personagens da Party</h1>
+          <h1 style={{ margin: '0 0 0.2rem' }}>Personagens da Party</h1>
           <p className="muted" style={{ margin: 0 }}>
             {isMestre
               ? 'Como mestre, você pode editar qualquer ficha, adicionar estados (ex: Embriagado) ou assumir o controle exclusivo.'
@@ -356,7 +367,13 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
       )}
 
       {selecionado && (
-        <div className="modal-backdrop" onClick={fecharModal}>
+        <div
+          className="modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label={criandoNovo ? 'Novo Personagem' : `Ficha de ${selecionado.nome || 'Personagem'}`}
+          onClick={fecharModal}
+        >
           <motion.div
             initial={{ opacity: 0, scale: 0.97, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -366,11 +383,11 @@ export default function Personagens({ campanhaId, sistema, userId, isMestre }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-between">
-              <span className="section-kicker">
-                {criandoNovo ? 'Novo Personagem (salve para criar)' : 'Ficha do Personagem'}
-              </span>
+              <h3 style={{ margin: 0 }}>
+                {criandoNovo ? 'Novo Personagem' : 'Ficha do Personagem'}
+              </h3>
               <button type="button" className="btn btn-sm btn-ghost" onClick={fecharModal}>
-                <X size={16} weight="light" /> Fechar
+                <X size={16} weight="light" aria-hidden="true" /> Fechar
               </button>
             </div>
             <FichaDinamica

@@ -153,31 +153,36 @@ export default function Campanhas({ user }) {
     >
       <div className="space-between" style={{ alignItems: 'flex-end' }}>
         <div>
-          <span className="section-kicker">Salão de Crônicas</span>
-          <h1 style={{ margin: '0.2rem 0 0.25rem' }}>Minhas Campanhas</h1>
+          <h1 style={{ margin: '0 0 0.25rem' }}>Minhas Campanhas</h1>
           <p className="muted" style={{ margin: 0 }}>
             Inicie uma nova mesa como mestre ou junte-se a uma crônica com o código de convite.
           </p>
         </div>
         <div className="row">
           <Link to="/biblioteca" className="btn btn-sm">
-            <BookOpenText size={15} weight="duotone" /> Biblioteca
+            <BookOpenText size={15} weight="duotone" aria-hidden="true" /> Biblioteca
           </Link>
           <Link to={guiaPath} className="btn btn-sm">
-            <Compass size={15} weight="duotone" /> Guias
+            <Compass size={15} weight="duotone" aria-hidden="true" /> Guias
           </Link>
         </div>
       </div>
 
-      {erro && <div className="badge badge-accent" style={{ padding: '0.5rem 0.75rem' }}>{erro}</div>}
+      {erro && <div role="alert" className="badge badge-accent" style={{ padding: '0.5rem 0.75rem' }}>{erro}</div>}
 
       <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
         <form onSubmit={criar} className="card dossie-papel stack" style={{ padding: '1.35rem' }}>
-          <div>
-            <span className="section-kicker">Mestre</span>
-            <h3 style={{ margin: '0.2rem 0 0' }}>Criar nova campanha</h3>
+          <div className="space-between">
+            <h3 style={{ margin: 0 }}>Criar nova campanha</h3>
+            <span className="badge badge-accent">
+              <Shield size={12} weight="duotone" aria-hidden="true" /> Mestre
+            </span>
           </div>
+          <label htmlFor="nova-campanha-nome" className="sr-only">
+            Nome da nova campanha
+          </label>
           <input
+            id="nova-campanha-nome"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             placeholder={`Nome da campanha (${exemploCampanha})`}
@@ -236,16 +241,20 @@ export default function Campanhas({ user }) {
 
         <form onSubmit={entrar} className="card stack" style={{ padding: '1.35rem', justifyContent: 'space-between' }}>
           <div className="stack" style={{ gap: '0.45rem' }}>
-            <div>
-              <span className="section-kicker">Jogador</span>
-              <h3 style={{ margin: '0.2rem 0 0' }}>Entrar em uma mesa</h3>
+            <div className="space-between">
+              <h3 style={{ margin: 0 }}>Entrar em uma mesa</h3>
+              <span className="badge">Jogador</span>
             </div>
             <p className="muted" style={{ margin: 0 }}>
               Digite o código de convite (ex: <code>A1B-C2D</code>) enviado pelo mestre.
             </p>
           </div>
           <div className="stack" style={{ gap: '0.65rem' }}>
+            <label htmlFor="entrar-codigo-convite" className="sr-only">
+              Código de convite da mesa
+            </label>
             <input
+              id="entrar-codigo-convite"
               className="mono"
               value={codigo}
               onChange={(e) => setCodigo(e.target.value)}
